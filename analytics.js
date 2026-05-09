@@ -437,6 +437,11 @@ const getProgress = () => {
 const getRecommendation = (stats) => {
   const flag = stats.highestFlag;
   const goal = getGoal(activeGoalId);
+  const activeSports = getProfileSports();
+  const primarySport = athleteProfile.primarySport || goal.sport;
+  const primaryProfile = getSportProfile(primarySport);
+  const profileTypes = getProfileRecommendedTypes();
+  const preferredTemplate = getTemplate(profileTypes[0] || primaryProfile.nextTypes[0] || goal.recommendedTypes[0]);
 
   if (flag.score >= 7 && ["Shoulder", "Elbow", "Wrist"].includes(flag.area)) {
     return {
@@ -463,19 +468,43 @@ const getRecommendation = (stats) => {
     };
   }
 
-  if (!stats.sportCounts.Endurance) {
+  if (!stats.sportCounts[primarySport]) {
     return {
-      type: "Endurance",
-      title: "Zone 2 base builder",
-      text: "No endurance work is logged yet, so a relaxed run, ride, or swim would round out the week."
+      type: `${primarySport} Focus`,
+      title: preferredTemplate.title,
+      text: `${primarySport} is set as your primary sport. Start with ${preferredTemplate.title.toLowerCase()} so the app can tune volume, recovery flags, and future suggestions around how you actually train.`
     };
   }
 
-  if (!stats.sportCounts.Strength) {
+  if (activeSports.includes("Endurance") && !stats.sportCounts.Endurance) {
+    return {
+      type: "Endurance",
+      title: "Zone 2 base builder",
+      text: "Endurance is part of your profile, but no aerobic work is logged yet. A relaxed run, ride, or swim would round out the week."
+    };
+  }
+
+  if (activeSports.includes("Strength") && !stats.sportCounts.Strength) {
     return {
       type: "Strength",
       title: "Full-body strength session",
-      text: "Sport work is covered, but strength consistency is missing. Keep it crisp and joint-friendly."
+      text: "Strength is in your profile, but strength consistency is missing. Keep it crisp, joint-friendly, and supportive of your sport work."
+    };
+  }
+
+  if (athleteProfile.trainingStyle === "Skill-first") {
+    return {
+      type: `${primarySport} Skill`,
+      title: preferredTemplate.title,
+      text: `Your profile is skill-first, so prioritize a measured ${primarySport.toLowerCase()} session before adding more conditioning volume.`
+    };
+  }
+
+  if (athleteProfile.trainingStyle === "Longevity" && flag.score >= 5) {
+    return {
+      type: "Longevity",
+      title: "Technique plus recovery buffer",
+      text: `${flag.area} is at ${flag.score}/10 and your profile leans longevity, so keep quality high and leave room for tissue recovery.`
     };
   }
 

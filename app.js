@@ -2,6 +2,7 @@ const storageKey = "athleteLog.sessions.v1";
 const recoveryStorageKey = "athleteLog.recovery.v1";
 const plannerStorageKey = "athleteLog.planner.v1";
 const goalStorageKey = "athleteLog.goal.v1";
+const programStorageKey = "athleteLog.program.v1";
 const profileStorageKey = "athleteLog.profile.v1";
 const customDrillStorageKey = "athleteLog.customDrills.v1";
 const readinessStorageKey = "athleteLog.readiness.v1";
@@ -25,6 +26,26 @@ function getTemplate(type) {
 }
 
 const getGoal = (goalId) => goals.find((goal) => goal.id === goalId) || goals[0];
+
+const getDefaultGoalForSport = (sport) => goals.find((goal) => goal.sport === sport || goal.relatedSports.includes(sport)) || goals[0];
+
+const normalizeGoalId = (goalId, fallback = goals[0].id) => goals.some((goal) => goal.id === goalId) ? goalId : fallback;
+
+const getDefaultProgramIdForSport = (sport) => {
+  if (sport === "Golf") return "golf-power";
+  if (sport === "Tennis") return "tennis-durability";
+  if (sport === "Pickleball") return "pickleball-resilience";
+  return "hybrid-base";
+};
+
+const normalizeProgramId = (programId, fallback = programBlueprints[0].id) => (
+  programBlueprints.some((program) => program.id === programId) ? programId : fallback
+);
+
+const findActiveItemId = (items) => {
+  if (!Array.isArray(items)) return null;
+  return items.find((item) => item?.active || item?.isActive || item?.selected)?.id || null;
+};
 
 
 const cloneItems = (items) => items.map((item) => ({
@@ -87,8 +108,77 @@ let recovery = Array.isArray(storedRecovery) ? storedRecovery : cloneItems(defau
 let customDrills = (Array.isArray(storedCustomDrills) ? storedCustomDrills : []).map(normalizeCustomDrill);
 let readinessCheckins = Array.isArray(storedReadinessCheckins) ? storedReadinessCheckins : [];
 const storedProfile = readStoredJson(profileStorageKey, null);
-let athleteProfile = { ...defaultProfile, ...(storedProfile && typeof storedProfile === "object" && !Array.isArray(storedProfile) ? storedProfile : {}) };
+const getKnownSports = () => sportProfiles.map((profile) => profile.sport);
+
+const cleanCommaList = (value, fallback = "") => String(value || fallback)
+  .split(",")
+  .map((item) => item.trim())
+  .filter(Boolean)
+  .join(", ");
+
+const normalizeProfileSports = (sports, primarySport) => {
+  const knownSports = getKnownSports();
+  const hasExplicitSports = Array.isArray(sports) || Boolean(String(sports || "").trim());
+  const source = Array.isArray(sports)
+    ? sports
+    : String(sports || "")
+      .split(",")
+      .map((sport) => sport.trim());
+  const cleanSports = source.filter((sport, index, list) => knownSports.includes(sport) && list.indexOf(sport) === index);
+  const selected = cleanSports.length ? cleanSports : hasExplicitSports ? [] : [...defaultProfile.activeSports];
+  if (!selected.includes(primarySport)) selected.unshift(primarySport);
+  return selected.filter((sport, index, list) => knownSports.includes(sport) && list.indexOf(sport) === index);
+};
+
+const normalizeSportPriorities = (priorities = {}, activeSports = [], primarySport = defaultProfile.primarySport) => {
+  const source = priorities && typeof priorities === "object" && !Array.isArray(priorities) ? priorities : {};
+  const normalizedPrimary = getKnownSports().includes(primarySport) ? primarySport : defaultProfile.primarySport;
+  return getKnownSports().reduce((clean, sport) => {
+    const fallback = sport === normalizedPrimary ? "Primary" : activeSports.includes(sport) ? "Secondary" : "Support";
+    clean[sport] = profileSportRoles.includes(source[sport]) ? source[sport] : fallback;
+    return clean;
+  }, {});
+};
+
+const normalizeProfileOption = (value, options, fallback) => options.includes(value) ? value : fallback;
+
+const normalizeAthleteProfile = (profile = {}) => {
+  const source = profile && typeof profile === "object" && !Array.isArray(profile) ? profile : {};
+  const knownSports = getKnownSports();
+  const primarySport = knownSports.includes(source.primarySport) ? source.primarySport : defaultProfile.primarySport;
+  const activeSports = normalizeProfileSports(source.activeSports || source.playedSports, primarySport);
+  const sportPriorities = normalizeSportPriorities(source.sportPriorities, activeSports, primarySport);
+  const goalId = normalizeGoalId(source.goalId || source.activeGoalId || findActiveItemId(source.goals), getDefaultGoalForSport(primarySport).id);
+  const programId = normalizeProgramId(source.programId || source.activeProgramId || findActiveItemId(source.programs), getDefaultProgramIdForSport(primarySport));
+
+  return {
+    ...defaultProfile,
+    ...source,
+    name: String(source.name || defaultProfile.name).trim() || defaultProfile.name,
+    primarySport,
+    activeSports,
+    sportPriorities,
+    goalId,
+    activeGoalId: normalizeGoalId(source.activeGoalId || findActiveItemId(source.goals) || goalId, goalId),
+    programId,
+    activeProgramId: normalizeProgramId(source.activeProgramId || findActiveItemId(source.programs) || programId, programId),
+    weeklyDays: Math.max(1, Math.min(7, Number(source.weeklyDays) || defaultProfile.weeklyDays)),
+    trainingDays: cleanCommaList(source.trainingDays, defaultProfile.trainingDays),
+    trainingStyle: normalizeProfileOption(source.trainingStyle, profileTrainingStyles, defaultProfile.trainingStyle),
+    preferredSessionLength: normalizeProfileOption(source.preferredSessionLength, profileSessionLengths, defaultProfile.preferredSessionLength),
+    intensityPreference: normalizeProfileOption(source.intensityPreference, profileIntensityOptions, defaultProfile.intensityPreference),
+    experienceLevel: normalizeProfileOption(source.experienceLevel, profileExperienceLevels, defaultProfile.experienceLevel),
+    access: cleanCommaList(source.access, defaultProfile.access),
+    otherActivities: cleanCommaList(source.otherActivities, defaultProfile.otherActivities),
+    watchAreas: cleanCommaList(source.watchAreas, defaultProfile.watchAreas),
+    note: String(source.note || defaultProfile.note).trim()
+  };
+};
+
+let athleteProfile = normalizeAthleteProfile(storedProfile);
 if (!localStorage.getItem(goalStorageKey) && athleteProfile.goalId) activeGoalId = athleteProfile.goalId;
+const storedProgramId = localStorage.getItem(programStorageKey);
+let activeProgramId = normalizeProgramId(storedProgramId, athleteProfile.programId);
 let snackbarTimer;
 let calendarCursor = new Date();
 calendarCursor.setDate(1);
@@ -97,7 +187,6 @@ let installPromptEvent = null;
 
 
 
-let activeProgramId = programBlueprints[0].id;
 const defaultGpsRoundScore = () => golfGpsCourse.holes.reduce((score, hole) => {
   score[hole.number] = {
     strokes: "",
@@ -179,6 +268,7 @@ const mirrorStateToDb = () => {
     writeDbState("plannedSessions", plannedSessions);
     writeDbState("recovery", recovery);
     writeDbState("activeGoalId", activeGoalId);
+    writeDbState("activeProgramId", activeProgramId);
     writeDbState("athleteProfile", athleteProfile);
     writeDbState("customDrills", customDrills);
     writeDbState("readinessCheckins", readinessCheckins);
@@ -210,6 +300,11 @@ const saveGoal = () => {
   mirrorStateToDb();
 };
 
+const saveProgram = () => {
+  localStorage.setItem(programStorageKey, activeProgramId);
+  mirrorStateToDb();
+};
+
 const saveProfile = () => {
   localStorage.setItem(profileStorageKey, JSON.stringify(athleteProfile));
   mirrorStateToDb();
@@ -223,6 +318,67 @@ const saveCustomDrills = () => {
 const saveReadiness = () => {
   localStorage.setItem(readinessStorageKey, JSON.stringify(readinessCheckins));
   mirrorStateToDb();
+};
+
+const getProfileSports = () => normalizeProfileSports(athleteProfile.activeSports, athleteProfile.primarySport);
+
+const isProfileSportActive = (sport) => getProfileSports().includes(sport);
+
+const getProfileSportRole = (sport) => athleteProfile.sportPriorities?.[sport] || (sport === athleteProfile.primarySport ? "Primary" : "Secondary");
+
+const getProfileRoleRank = (sport) => ({ Primary: 0, Secondary: 1, Support: 2 }[getProfileSportRole(sport)] ?? 3);
+
+const getActiveSportProfiles = () => {
+  const profiles = sportProfiles
+    .filter((profile) => isProfileSportActive(profile.sport))
+    .sort((a, b) => {
+      if (a.sport === athleteProfile.primarySport) return -1;
+      if (b.sport === athleteProfile.primarySport) return 1;
+      return getProfileRoleRank(a.sport) - getProfileRoleRank(b.sport) || a.sport.localeCompare(b.sport);
+    });
+
+  return profiles.length ? profiles : [getSportProfile(athleteProfile.primarySport)];
+};
+
+const getProfileRecommendedTypes = () => {
+  const types = getActiveSportProfiles().flatMap((profile) => profile.nextTypes);
+  return [...new Set(types)].filter((type) => isProfileSportActive(getTemplate(type).sport));
+};
+
+const getProfileProgramId = () => normalizeProgramId(athleteProfile.programId, getDefaultProgramIdForSport(athleteProfile.primarySport));
+
+const getProfileActiveGoalId = (profile, fallback) => (
+  normalizeGoalId(profile.activeGoalId || findActiveItemId(profile.goals) || profile.goalId, fallback)
+);
+
+const getProfileActiveProgramId = (profile, fallback) => (
+  normalizeProgramId(profile.activeProgramId || findActiveItemId(profile.programs) || profile.programId, fallback)
+);
+
+const getProfileSummary = () => {
+  const activeSports = getActiveSportProfiles();
+  const sportNames = activeSports.map((profile) => profile.sport);
+  const supportSports = activeSports.filter((profile) => getProfileSportRole(profile.sport) === "Support").map((profile) => profile.sport);
+  const focusGoal = getGoal(athleteProfile.goalId);
+  const profileComplete = [
+    athleteProfile.name,
+    athleteProfile.primarySport,
+    athleteProfile.goalId,
+    athleteProfile.trainingDays,
+    athleteProfile.watchAreas,
+    athleteProfile.access,
+    athleteProfile.note
+  ].filter(Boolean).length;
+
+  return {
+    activeSports,
+    sportNames,
+    supportSports,
+    focusGoal,
+    completion: Math.round(profileComplete / 7 * 100),
+    cadence: `${athleteProfile.weeklyDays} days/week, ${athleteProfile.preferredSessionLength}`,
+    bias: `${athleteProfile.trainingStyle} with ${athleteProfile.intensityPreference.toLowerCase()} intensity`
+  };
 };
 
 const getGpsRoundState = () => ({
@@ -628,7 +784,8 @@ const getCompletedProgramSessions = () => {
 const createSmartProgramPlan = () => {
   const stats = getTrainingStats();
   const weekIndex = Math.min(3, Math.floor(getCompletedProgramSessions() / Math.max(1, Number(athleteProfile.weeklyDays) || 4)));
-  const plan = createProgramPlan(weekIndex);
+  const profilePlan = createProgramPlan(weekIndex).filter((item) => isProfileSportActive(getTemplate(item.type).sport));
+  const plan = profilePlan.length ? profilePlan : createProgramPlan(weekIndex);
   const preferredDays = athleteProfile.trainingDays
     .split(",")
     .map((day) => day.trim().slice(0, 3))
@@ -652,6 +809,7 @@ const serializeLogData = () => ({
   plannedSessions,
   recovery,
   activeGoalId,
+  activeProgramId,
   athleteProfile,
   customDrills,
   readinessCheckins,

@@ -252,14 +252,15 @@ const renderSportDashboards = () => {
   const container = document.querySelector("#sportDashboardGrid");
   if (!container) return;
 
-  container.innerHTML = sportProfiles.map((profile) => {
+  container.innerHTML = getActiveSportProfiles().map((profile) => {
     const sportSessions = getSessionsBySport(profile.sport);
     const minutes = getSportMinutes(profile.sport);
     const readiness = getSportReadiness(profile, sportSessions);
     const recoveryFlag = getSportRecovery(profile);
     const recent = sportSessions.slice(0, 2);
-    const nextTemplates = profile.nextTypes.map((type) => getTemplate(type));
+    const nextTemplates = profile.nextTypes.map((type) => getTemplate(type)).filter((template) => isProfileSportActive(template.sport));
     const golfPanel = profile.sport === "Golf" ? renderGolfDashboardPanel() : "";
+    const sportRole = getProfileSportRole(profile.sport);
 
     return `
       <article class="sport-dashboard-card">
@@ -267,6 +268,7 @@ const renderSportDashboards = () => {
           <div>
             <p class="eyebrow">${profile.sport}</p>
             <h3>${profile.primaryMetric}</h3>
+            <span class="profile-role-badge">${sportRole}</span>
           </div>
           <strong>${readiness}</strong>
         </div>
@@ -692,19 +694,119 @@ const renderProgramControls = () => {
   document.querySelector("#programFocus").innerHTML = programBlueprints.map((program) => `
     <option value="${program.id}">${program.title}</option>
   `).join("");
+  document.querySelector("#programFocus").value = activeProgramId;
+};
+
+const renderProfileSelectOptions = (selector, options, selectedValue) => {
+  const element = document.querySelector(selector);
+  if (!element) return;
+  element.innerHTML = options.map((option) => `
+    <option value="${escapeHtml(option)}" ${option === selectedValue ? "selected" : ""}>${escapeHtml(option)}</option>
+  `).join("");
+};
+
+const renderProfileSportGrid = () => {
+  const container = document.querySelector("#profileSportGrid");
+  if (!container) return;
+
+  const activeSports = getProfileSports();
+  container.innerHTML = sportProfiles.map((profile) => {
+    const checked = activeSports.includes(profile.sport);
+    const role = getProfileSportRole(profile.sport);
+    const safeSport = escapeHtml(profile.sport);
+    return `
+      <article class="profile-sport-card ${checked ? "active" : ""}">
+        <label class="profile-sport-toggle">
+          <input data-profile-sport="${safeSport}" type="checkbox" ${checked ? "checked" : ""} />
+          <span>${safeSport}</span>
+        </label>
+        <p>${escapeHtml(profile.focus)}</p>
+        <label>
+          Role
+          <select data-profile-sport-role="${safeSport}">
+            ${profileSportRoles.map((option) => `<option value="${option}" ${option === role ? "selected" : ""}>${option}</option>`).join("")}
+          </select>
+        </label>
+      </article>
+    `;
+  }).join("");
+};
+
+const renderProfilePreview = () => {
+  const container = document.querySelector("#profilePreview");
+  if (!container) return;
+
+  const summary = getProfileSummary();
+  const recommendedTypes = getProfileRecommendedTypes().slice(0, 5);
+  container.innerHTML = `
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">Personalization</p>
+        <h3>How the app will adapt</h3>
+      </div>
+      <strong class="profile-completion">${summary.completion}%</strong>
+    </div>
+    <div class="profile-summary-grid">
+      <article>
+        <span>Identity</span>
+        <strong>${escapeHtml(athleteProfile.name)}</strong>
+        <p>${escapeHtml(athleteProfile.experienceLevel)} ${escapeHtml(athleteProfile.primarySport)} athlete</p>
+      </article>
+      <article>
+        <span>Cadence</span>
+        <strong>${escapeHtml(summary.cadence)}</strong>
+        <p>${escapeHtml(athleteProfile.trainingDays)}</p>
+      </article>
+      <article>
+        <span>Coach bias</span>
+        <strong>${escapeHtml(summary.bias)}</strong>
+        <p>${escapeHtml(summary.focusGoal.title)}</p>
+      </article>
+    </div>
+    <div class="profile-pill-list">
+      ${summary.activeSports.map((profile) => `
+        <span>${escapeHtml(profile.sport)}: ${escapeHtml(getProfileSportRole(profile.sport))}</span>
+      `).join("")}
+    </div>
+    <div class="profile-adapt-list">
+      <p><strong>Sport rooms:</strong> ${escapeHtml(summary.sportNames.join(", "))}</p>
+      <p><strong>Support mix:</strong> ${summary.supportSports.length ? escapeHtml(summary.supportSports.join(", ")) : "No support sports selected"}</p>
+      <p><strong>Watch areas:</strong> ${escapeHtml(athleteProfile.watchAreas)}</p>
+      <p><strong>Access:</strong> ${escapeHtml(athleteProfile.access)}</p>
+    </div>
+    <div class="sport-next-list">
+      ${recommendedTypes.map((type) => {
+        const template = getTemplate(type);
+        return `<button class="ghost-button" data-profile-template="${template.type}" type="button">${template.title}</button>`;
+      }).join("")}
+    </div>
+  `;
 };
 
 const renderProfile = () => {
+  renderProfileSelectOptions("#profilePrimarySport", getKnownSports(), athleteProfile.primarySport);
   document.querySelector("#profileGoal").innerHTML = goals.map((goal) => `
     <option value="${goal.id}">${goal.title}</option>
   `).join("");
+  renderProfileSelectOptions("#profileTrainingStyle", profileTrainingStyles, athleteProfile.trainingStyle);
+  renderProfileSelectOptions("#profileSessionLength", profileSessionLengths, athleteProfile.preferredSessionLength);
+  renderProfileSelectOptions("#profileIntensity", profileIntensityOptions, athleteProfile.intensityPreference);
+  renderProfileSelectOptions("#profileExperience", profileExperienceLevels, athleteProfile.experienceLevel);
   document.querySelector("#profileName").value = athleteProfile.name;
   document.querySelector("#profilePrimarySport").value = athleteProfile.primarySport;
   document.querySelector("#profileGoal").value = athleteProfile.goalId;
   document.querySelector("#profileDays").value = athleteProfile.weeklyDays;
   document.querySelector("#profileTrainingDays").value = athleteProfile.trainingDays;
+  document.querySelector("#profileTrainingStyle").value = athleteProfile.trainingStyle;
+  document.querySelector("#profileSessionLength").value = athleteProfile.preferredSessionLength;
+  document.querySelector("#profileIntensity").value = athleteProfile.intensityPreference;
+  document.querySelector("#profileExperience").value = athleteProfile.experienceLevel;
+  document.querySelector("#profileAccess").value = athleteProfile.access;
+  document.querySelector("#profileOtherActivities").value = athleteProfile.otherActivities;
   document.querySelector("#profileWatchAreas").value = athleteProfile.watchAreas;
   document.querySelector("#profileNote").value = athleteProfile.note;
+  renderProfileSportGrid();
+  renderProfilePreview();
 };
 
 const renderPrograms = () => {
@@ -1085,12 +1187,14 @@ const renderDashboard = () => {
   document.querySelector("#loadMetric").textContent = `${stats.totalHours.toFixed(1)}h`;
   document.querySelector("#loadLabel").textContent = loadLabel;
   document.querySelector("#mixMetric").textContent = stats.sportCount;
-  document.querySelector("#mixLabel").textContent = Object.entries(stats.sportCounts).map(([sport, count]) => `${sport} ${count}`).join(", ");
+  document.querySelector("#mixLabel").textContent = stats.sportCount
+    ? Object.entries(stats.sportCounts).map(([sport, count]) => `${sport} ${count}`).join(", ")
+    : `Profile sports: ${getProfileSports().join(", ")}`;
   document.querySelector("#recoveryMetric").textContent = recoveryLevel;
   document.querySelector("#recoveryLabel").textContent = `${flag.area} is the top flag at ${flag.score}/10`;
   document.querySelector("#topbarReadiness").textContent = stats.readiness;
   document.querySelector("#topbarLoad").textContent = `${stats.totalHours.toFixed(1)}h`;
-  document.querySelector("#topbarFocus").textContent = Object.entries(stats.sportCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Golf";
+  document.querySelector("#topbarFocus").textContent = athleteProfile.primarySport;
   document.querySelector("#recommendationType").textContent = recommendation.type;
   document.querySelector("#recommendationTitle").textContent = recommendation.title;
   document.querySelector("#recommendationText").textContent = recommendation.text;
@@ -1164,8 +1268,10 @@ const renderInsights = (stats) => {
   const goalProgress = getGoalProgress(goal);
   const sortedSports = Object.entries(stats.sportCounts).sort((a, b) => b[1] - a[1]);
   const topSport = sortedSports[0]?.[0] || "Sport";
+  const profileSummary = getProfileSummary();
   const insights = [
     `${goal.title} is the active goal at ${goalProgress.progress}% with ${goalProgress.plannedSessions} planned focus sessions.`,
+    `Profile bias: ${profileSummary.bias} across ${profileSummary.sportNames.join(", ")}.`,
     `${topSport} is your dominant category right now with ${sortedSports[0]?.[1] || 0} logged sessions.`,
     `${stats.totalHours.toFixed(1)} total hours are logged across ${sessions.length} sessions.`,
     `${flag.area} is the main recovery limiter at ${flag.score}/10 and trending ${flag.trend.toLowerCase()}.`

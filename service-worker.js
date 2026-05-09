@@ -1,4 +1,4 @@
-const cacheName = "athlete-log-v7";
+const cacheName = "athlete-log-v8";
 const appShell = [
   "./",
   "./index.html",

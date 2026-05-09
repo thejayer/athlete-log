@@ -4,6 +4,20 @@ A static MVP prototype for a sport-performance training app: Hevy-style logging,
 
 Open `index.html` in a browser to try it.
 
+## Development workflow
+
+- Open a pull request into `main` for changes.
+- GitHub Actions runs JavaScript syntax checks and static app integrity tests on every pull request.
+- CodeRabbit reviews pull requests in GitHub before merge.
+- Merging to `main` runs the same checks and deploys the static app to GitHub Pages.
+
+Local checks:
+
+```bash
+npm run check:js
+npm test
+```
+
 ## Current prototype
 
 - Template-driven sport logging for golf range sessions, golf short-game practice, golf rounds, tennis ball machine sessions, tennis matches, pickleball drills, pickleball matches, running, and lifting.

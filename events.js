@@ -1,3 +1,30 @@
+const collectProfileForm = () => {
+  const activeSports = [...document.querySelectorAll("[data-profile-sport]:checked")]
+    .map((input) => input.dataset.profileSport);
+  const sportPriorities = getKnownSports().reduce((priorities, sport) => {
+    priorities[sport] = document.querySelector(`[data-profile-sport-role="${sport}"]`)?.value || (sport === document.querySelector("#profilePrimarySport").value ? "Primary" : "Secondary");
+    return priorities;
+  }, {});
+
+  return normalizeAthleteProfile({
+    name: document.querySelector("#profileName").value,
+    primarySport: document.querySelector("#profilePrimarySport").value,
+    activeSports,
+    sportPriorities,
+    goalId: document.querySelector("#profileGoal").value,
+    weeklyDays: Number(document.querySelector("#profileDays").value) || 4,
+    trainingDays: document.querySelector("#profileTrainingDays").value || defaultProfile.trainingDays,
+    trainingStyle: document.querySelector("#profileTrainingStyle").value,
+    preferredSessionLength: document.querySelector("#profileSessionLength").value,
+    intensityPreference: document.querySelector("#profileIntensity").value,
+    experienceLevel: document.querySelector("#profileExperience").value,
+    access: document.querySelector("#profileAccess").value,
+    otherActivities: document.querySelector("#profileOtherActivities").value,
+    watchAreas: document.querySelector("#profileWatchAreas").value || defaultProfile.watchAreas,
+    note: document.querySelector("#profileNote").value || ""
+  });
+};
+
 function setupEventListeners() {
   document.querySelectorAll("[data-view]").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view, { focus: true }));
@@ -226,24 +253,49 @@ function setupEventListeners() {
     }
   });
   
+  document.querySelector("#profileForm").addEventListener("click", (event) => {
+    const templateButton = event.target.closest("[data-profile-template]");
+    if (!templateButton) return;
+    applyTemplate(templateButton.dataset.profileTemplate);
+    setView("log", { focus: true });
+  });
+
+  document.querySelector("#profileForm").addEventListener("change", (event) => {
+    if (event.target.id === "profilePrimarySport") {
+      const primarySport = event.target.value;
+      const primarySportInput = document.querySelector(`[data-profile-sport="${primarySport}"]`);
+      if (primarySportInput) {
+        primarySportInput.checked = true;
+        primarySportInput.closest(".profile-sport-card")?.classList.add("active");
+      }
+      document.querySelectorAll("[data-profile-sport-role]").forEach((select) => {
+        if (select.dataset.profileSportRole !== primarySport && select.value === "Primary") select.value = "Secondary";
+      });
+      const primarySportRole = document.querySelector(`[data-profile-sport-role="${primarySport}"]`);
+      if (primarySportRole) primarySportRole.value = "Primary";
+      document.querySelector("#profileGoal").value = getDefaultGoalForSport(primarySport).id;
+    }
+
+    const sportInput = event.target.closest("[data-profile-sport]");
+    if (!sportInput) return;
+    sportInput.closest(".profile-sport-card")?.classList.toggle("active", sportInput.checked);
+  });
+
   document.querySelector("#profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    athleteProfile = {
-      name: document.querySelector("#profileName").value || "Athlete",
-      primarySport: document.querySelector("#profilePrimarySport").value,
-      goalId: document.querySelector("#profileGoal").value,
-      weeklyDays: Number(document.querySelector("#profileDays").value) || 4,
-      trainingDays: document.querySelector("#profileTrainingDays").value || defaultProfile.trainingDays,
-      watchAreas: document.querySelector("#profileWatchAreas").value || defaultProfile.watchAreas,
-      note: document.querySelector("#profileNote").value || ""
-    };
+    athleteProfile = collectProfileForm();
     activeGoalId = athleteProfile.goalId;
+    activeProgramId = getProfileProgramId();
     saveProfile();
     saveGoal();
+    renderProfile();
     renderGoals();
     renderDashboard();
+    renderSportDashboards();
+    renderProgress();
+    renderPrograms();
     renderPlanner();
-    showToast("Profile saved");
+    showToast("Profile saved and recommendations updated");
   });
   
   document.querySelector("#workoutForm").addEventListener("submit", (event) => {
@@ -533,7 +585,7 @@ function setupEventListeners() {
       sessions = payload.sessions.map(normalizeSession);
       plannedSessions = Array.isArray(payload.plannedSessions) ? payload.plannedSessions.map(normalizePlan) : plannedSessions;
       recovery = Array.isArray(payload.recovery) ? payload.recovery : recovery;
-      athleteProfile = payload.athleteProfile ? { ...defaultProfile, ...payload.athleteProfile } : athleteProfile;
+      athleteProfile = payload.athleteProfile ? normalizeAthleteProfile(payload.athleteProfile) : athleteProfile;
       customDrills = Array.isArray(payload.customDrills) ? payload.customDrills.map(normalizeCustomDrill) : customDrills;
       readinessCheckins = Array.isArray(payload.readinessCheckins) ? payload.readinessCheckins : readinessCheckins;
       golfClubBag = Array.isArray(payload.golfClubBag) ? normalizeGolfClubBag(payload.golfClubBag) : golfClubBag;
@@ -562,6 +614,10 @@ function setupEventListeners() {
       renderGoals();
       renderBodyMap();
       renderProfile();
+      renderSportDashboards();
+      renderPrograms();
+      renderDashboard();
+      renderProgress();
       renderLibraryFilters();
       renderDrillLibrary();
       renderTemplates();

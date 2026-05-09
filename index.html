@@ -248,42 +248,96 @@
             </div>
           </div>
 
-          <form class="profile-form panel" id="profileForm">
-            <label>
-              Athlete name
-              <input id="profileName" type="text" placeholder="Your name" />
-            </label>
-            <label>
-              Primary sport
-              <select id="profilePrimarySport">
-                <option>Golf</option>
-                <option>Tennis</option>
-                <option>Pickleball</option>
-                <option>Endurance</option>
-                <option>Strength</option>
-              </select>
-            </label>
-            <label>
-              Main goal
-              <select id="profileGoal"></select>
-            </label>
-            <label>
-              Weekly availability
-              <input id="profileDays" type="number" min="1" max="7" value="4" />
-            </label>
-            <label>
-              Preferred training days
-              <input id="profileTrainingDays" type="text" placeholder="Mon, Wed, Fri, Sat" />
-            </label>
-            <label>
-              Watch areas
-              <input id="profileWatchAreas" type="text" placeholder="Shoulder, back, knees" />
-            </label>
-            <label class="wide">
-              Training note
-              <textarea id="profileNote" rows="4" placeholder="What should the app remember when it recommends training?"></textarea>
-            </label>
-            <button class="primary-button" type="submit">Save profile</button>
+          <form class="profile-builder" id="profileForm">
+            <section class="profile-card panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Identity</p>
+                  <h3>Who the app is coaching</h3>
+                </div>
+              </div>
+              <div class="profile-form-grid">
+                <label>
+                  Athlete name
+                  <input id="profileName" type="text" placeholder="Your name" />
+                </label>
+                <label>
+                  Experience
+                  <select id="profileExperience"></select>
+                </label>
+                <label>
+                  Primary sport
+                  <select id="profilePrimarySport"></select>
+                </label>
+                <label>
+                  Main goal
+                  <select id="profileGoal"></select>
+                </label>
+              </div>
+            </section>
+
+            <section class="profile-card panel profile-sports-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Sport Mix</p>
+                  <h3>What you actually play and train</h3>
+                </div>
+              </div>
+              <div class="profile-sport-grid" id="profileSportGrid"></div>
+            </section>
+
+            <section class="profile-card panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Training Rules</p>
+                  <h3>How recommendations should feel</h3>
+                </div>
+              </div>
+              <div class="profile-form-grid">
+                <label>
+                  Weekly availability
+                  <input id="profileDays" type="number" min="1" max="7" value="4" />
+                </label>
+                <label>
+                  Preferred training days
+                  <input id="profileTrainingDays" type="text" placeholder="Mon, Wed, Fri, Sat" />
+                </label>
+                <label>
+                  Training style
+                  <select id="profileTrainingStyle"></select>
+                </label>
+                <label>
+                  Preferred session length
+                  <select id="profileSessionLength"></select>
+                </label>
+                <label>
+                  Intensity preference
+                  <select id="profileIntensity"></select>
+                </label>
+                <label>
+                  Watch areas
+                  <input id="profileWatchAreas" type="text" placeholder="Shoulder, back, knees" />
+                </label>
+                <label class="wide">
+                  Places and equipment you can access
+                  <input id="profileAccess" type="text" placeholder="Range, course, gym, courts, bike, pool" />
+                </label>
+                <label class="wide">
+                  Other activities
+                  <input id="profileOtherActivities" type="text" placeholder="Cycling, swimming, CrossFit, rec leagues" />
+                </label>
+                <label class="wide">
+                  Training note
+                  <textarea id="profileNote" rows="4" placeholder="What should the app remember when it recommends training?"></textarea>
+                </label>
+              </div>
+            </section>
+
+            <section class="profile-preview panel" id="profilePreview" aria-live="polite"></section>
+
+            <div class="profile-actions">
+              <button class="primary-button" type="submit">Save profile</button>
+            </div>
           </form>
         </section>
 

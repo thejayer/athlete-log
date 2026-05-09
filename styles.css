@@ -985,7 +985,6 @@ textarea:focus-visible {
 .program-builder,
 .compare-controls,
 .data-tools,
-.profile-form,
 .custom-builder,
 .readiness-form {
   display: grid;
@@ -995,15 +994,154 @@ textarea:focus-visible {
   margin-top: 18px;
 }
 
-.profile-form {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-}
-
 .custom-builder {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: start;
   margin: 18px 0;
+}
+
+.profile-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: var(--space-4);
+  margin-top: 18px;
+}
+
+.profile-card,
+.profile-preview {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.profile-sports-panel,
+.profile-actions {
+  grid-column: 1 / -1;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.profile-sport-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.profile-sport-card {
+  min-height: 188px;
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  padding: var(--space-4);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
+}
+
+.profile-sport-card.active {
+  border-color: rgba(204, 0, 0, 0.36);
+  background: #fffafa;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-sport-card:hover {
+  transform: var(--press-lift);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-sport-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--ink);
+  font-size: var(--text-body);
+}
+
+.profile-sport-toggle input {
+  width: 20px;
+  min-height: 20px;
+  accent-color: #cc0000;
+}
+
+.profile-sport-card p,
+.profile-adapt-list p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.profile-role-badge,
+.profile-completion,
+.profile-pill-list span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: var(--control-height-sm);
+  border-radius: 999px;
+  background: rgba(204, 0, 0, 0.08);
+  color: #cc0000;
+  padding: 0 var(--space-3);
+  font-size: var(--text-caption);
+  font-weight: 900;
+}
+
+.profile-completion {
+  background: #202124;
+  color: #fff;
+}
+
+.profile-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.profile-summary-grid article {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  padding: var(--space-4);
+}
+
+.profile-summary-grid span {
+  color: var(--muted);
+  font-size: var(--text-label);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.profile-summary-grid strong {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-card-title);
+  line-height: 1.1;
+}
+
+.profile-summary-grid p {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+}
+
+.profile-pill-list,
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.profile-actions {
+  justify-content: flex-end;
+}
+
+.profile-preview .sport-next-list {
+  margin-top: 0;
 }
 
 .custom-builder h3 {
@@ -2725,6 +2863,10 @@ body.dark .drill-card.custom {
   background: linear-gradient(135deg, var(--surface-solid), rgba(204, 0, 0, 0.12));
 }
 
+body.dark .profile-sport-card.active {
+  background: rgba(204, 0, 0, 0.12);
+}
+
 body.dark .score-stat {
   background: rgba(204, 0, 0, 0.12);
 }
@@ -2791,9 +2933,12 @@ body.dark .gps-map {
   .program-weeks,
   .compare-grid,
   .program-builder,
-    .data-tools,
-    .import-mapper,
-  .profile-form,
+  .data-tools,
+  .import-mapper,
+  .profile-builder,
+  .profile-form-grid,
+  .profile-sport-grid,
+  .profile-summary-grid,
   .custom-builder,
   .readiness-form,
   .lift-set-row,
@@ -2890,7 +3035,10 @@ body.dark .gps-map {
   .program-builder,
   .data-tools,
   .import-mapper,
-  .profile-form,
+  .profile-builder,
+  .profile-form-grid,
+  .profile-sport-grid,
+  .profile-summary-grid,
   .custom-builder,
   .readiness-form,
   .lift-set-row,
@@ -2970,6 +3118,10 @@ body.dark .gps-map {
 
   .log-form {
     padding-bottom: 82px;
+  }
+
+  .profile-builder {
+    padding-bottom: 90px;
   }
 
   #saveSessionButton {
@@ -3071,9 +3223,10 @@ body.dark .gps-map {
     box-shadow: var(--shadow-md);
   }
 
-  body[data-view="log"] .fab-log {
-    display: none;
-  }
+body[data-view="log"] .fab-log,
+body[data-view="profile"] .fab-log {
+  display: none;
+}
 
   .snackbar {
     bottom: 92px;

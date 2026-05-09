@@ -272,6 +272,12 @@ const sportProfiles = [
   }
 ];
 
+const profileSportRoles = ["Primary", "Secondary", "Support"];
+const profileTrainingStyles = ["Balanced", "Skill-first", "Power-first", "Longevity", "Tournament prep"];
+const profileSessionLengths = ["30-45 min", "45-60 min", "60-90 min", "90+ min"];
+const profileIntensityOptions = ["Moderate", "Low impact", "High performance"];
+const profileExperienceLevels = ["Recreational", "Competitive", "Tournament", "Coach-led"];
+
 const defaultSessions = [
   {
     id: "demo-range",
@@ -351,9 +357,23 @@ const defaultRecovery = [
 const defaultProfile = {
   name: "Athlete",
   primarySport: "Golf",
+  activeSports: ["Golf", "Tennis", "Pickleball", "Endurance", "Strength"],
+  sportPriorities: {
+    Golf: "Primary",
+    Tennis: "Secondary",
+    Pickleball: "Secondary",
+    Endurance: "Support",
+    Strength: "Support"
+  },
   goalId: "clubhead-speed",
   weeklyDays: 4,
   trainingDays: "Mon, Wed, Fri, Sat",
+  trainingStyle: "Balanced",
+  preferredSessionLength: "45-60 min",
+  intensityPreference: "Moderate",
+  experienceLevel: "Competitive",
+  access: "Golf range, course, gym, tennis courts, pickleball courts",
+  otherActivities: "Cycling, swimming, CrossFit when available",
   watchAreas: "Shoulder, Back, Knees",
   note: "Keep power work crisp and avoid stacking hard court days when soreness is elevated."
 };

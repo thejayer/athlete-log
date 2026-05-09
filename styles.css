@@ -22,6 +22,31 @@
   --shadow-lg: 0 8px 18px rgba(60, 64, 67, 0.12), 0 24px 48px rgba(60, 64, 67, 0.14);
   --radius: 12px;
   --radius-sm: 8px;
+  --radius-xs: 6px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --text-label: 0.72rem;
+  --text-caption: 0.78rem;
+  --text-ui: 0.88rem;
+  --text-body: 0.94rem;
+  --text-section: 1.05rem;
+  --text-card-title: 1.18rem;
+  --text-stat: 1.35rem;
+  --text-display: clamp(1.65rem, 2.7vw, 2.5rem);
+  --control-height-sm: 36px;
+  --control-height: 44px;
+  --control-height-lg: 48px;
+  --control-radius: 10px;
+  --card-padding: 18px;
+  --panel-padding: 20px;
+  --hover-lift: translateY(-2px);
+  --press-lift: translateY(-1px);
+  --motion-fast: 160ms;
+  --motion-med: 200ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
   font-family: "Google Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -42,6 +67,8 @@ body {
     radial-gradient(circle at 94% 4%, rgba(26, 115, 232, 0.09), transparent 22rem),
     linear-gradient(135deg, var(--bg), var(--bg-2));
   color: var(--ink);
+  font-size: var(--text-body);
+  line-height: 1.5;
   overflow-x: hidden;
 }
 
@@ -73,6 +100,13 @@ textarea {
 
 button {
   cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 ::selection {
@@ -115,6 +149,7 @@ button {
   position: sticky;
   top: 0;
   height: 100vh;
+  min-width: 0;
   box-shadow: inset -1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -165,7 +200,7 @@ button {
 }
 
 .brand h1 {
-  font-size: 1.18rem;
+  font-size: var(--text-card-title);
   line-height: 1.1;
   font-weight: 900;
 }
@@ -173,13 +208,13 @@ button {
 .brand p {
   color: #c6cad2;
   margin-top: 3px;
-  font-size: 0.82rem;
+  font-size: var(--text-caption);
   font-weight: 700;
 }
 
 .eyebrow {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: var(--text-label);
   line-height: 1.2;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -192,7 +227,9 @@ button {
 
 .nav-list {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .nav-item {
@@ -203,13 +240,13 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 44px;
-  padding: 10px;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
   text-align: left;
-  font-size: 0.88rem;
+  font-size: var(--text-ui);
   font-weight: 800;
   position: relative;
-  transition: background 160ms var(--ease), border-color 160ms var(--ease), transform 160ms var(--ease);
+  transition: background var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), transform var(--motion-fast) var(--ease);
 }
 
 .nav-item.active,
@@ -236,7 +273,7 @@ button {
   border-radius: 50%;
   background: rgba(204, 0, 0, 0.22);
   color: #ffdad6;
-  font-size: 0.74rem;
+  font-size: var(--text-label);
   font-weight: 900;
 }
 
@@ -251,7 +288,7 @@ button {
 
 .sidebar-panel h2 {
   margin-top: 8px;
-  font-size: 1.05rem;
+  font-size: var(--text-section);
   line-height: 1.25;
 }
 
@@ -259,7 +296,7 @@ button {
   color: #d0d4dc;
   line-height: 1.5;
   margin-top: 12px;
-  font-size: 0.9rem;
+  font-size: var(--text-ui);
 }
 
 .goal-meter,
@@ -316,14 +353,14 @@ button {
 
 .topbar h2,
 .section-head h2 {
-  font-size: clamp(1.65rem, 2.7vw, 2.5rem);
+  font-size: var(--text-display);
   line-height: 1;
   letter-spacing: 0;
 }
 
 .panel h3,
 .template-tools h3 {
-  font-size: 1.05rem;
+  font-size: var(--text-section);
   line-height: 1.15;
 }
 
@@ -344,7 +381,7 @@ button {
 }
 
 .cockpit-status div {
-  min-height: 48px;
+  min-height: var(--control-height-lg);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.76);
@@ -355,7 +392,7 @@ button {
 .cockpit-status span {
   display: block;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -363,23 +400,30 @@ button {
 .cockpit-status strong {
   display: block;
   margin-top: 2px;
-  font-size: 1.05rem;
+  font-size: var(--text-section);
   line-height: 1;
 }
 
 .primary-button,
 .ghost-button,
 .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  min-height: 42px;
-  padding: 0 16px;
+  border-radius: var(--control-radius);
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
   background: var(--surface-solid);
   color: var(--ink);
-  font-size: 0.88rem;
+  font-size: var(--text-ui);
   font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
   box-shadow: 0 8px 18px rgba(22, 32, 28, 0.05);
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 
 .primary-button {
@@ -392,7 +436,7 @@ button {
 .ghost-button:hover,
 .icon-button:hover,
 .primary-button:hover {
-  transform: translateY(-1px);
+  transform: var(--press-lift);
   box-shadow: var(--shadow-sm);
 }
 
@@ -411,7 +455,7 @@ textarea:focus-visible {
 }
 
 .icon-button {
-  width: 42px;
+  width: var(--control-height);
   padding: 0;
 }
 
@@ -490,7 +534,7 @@ textarea:focus-visible {
 .hero-band p {
   max-width: 680px;
   line-height: 1.65;
-  font-size: 1rem;
+  font-size: var(--text-section);
 }
 
 .sport-radar {
@@ -534,7 +578,7 @@ textarea:focus-visible {
 
 .radar-point {
   position: absolute;
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 900;
   padding: 6px 9px;
   border-radius: 999px;
@@ -559,7 +603,7 @@ textarea:focus-visible {
 .compare-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
   margin: 18px 0;
 }
 
@@ -591,7 +635,7 @@ textarea:focus-visible {
 .trend-card,
 .compare-card,
 .panel {
-  transition: transform 180ms var(--ease), box-shadow 180ms var(--ease), border-color 180ms var(--ease), background 180ms var(--ease);
+  transition: transform var(--motion-med) var(--ease), box-shadow var(--motion-med) var(--ease), border-color var(--motion-med) var(--ease), background var(--motion-med) var(--ease);
 }
 
 .metric-card:hover,
@@ -603,17 +647,17 @@ textarea:focus-visible {
 .drill-card:hover,
 .trend-card:hover,
 .compare-card:hover {
-  transform: translateY(-2px);
+  transform: var(--hover-lift);
   border-color: rgba(204, 0, 0, 0.2);
   box-shadow: var(--shadow-md);
 }
 
 .analytics-card {
   min-height: 220px;
-  padding: 18px;
+  padding: var(--card-padding);
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: var(--space-3);
   overflow: hidden;
   position: relative;
 }
@@ -632,27 +676,27 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .advanced-card {
   min-height: 150px;
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .advanced-card span,
 .persistence-card span {
   color: #cc0000;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .advanced-card strong,
 .persistence-card strong {
-  font-size: 1.7rem;
+  font-size: var(--text-stat);
   line-height: 1;
 }
 
@@ -663,12 +707,13 @@ textarea:focus-visible {
   margin: 0;
   color: var(--muted);
   line-height: 1.5;
+  font-size: var(--text-body);
 }
 
 .empty-state {
   display: grid;
   align-content: center;
-  gap: 10px;
+  gap: var(--space-3);
   min-height: 180px;
   border-style: dashed;
   color: var(--ink);
@@ -712,7 +757,7 @@ textarea:focus-visible {
 
 .sport-dashboard-card {
   min-height: 310px;
-  padding: 20px;
+  padding: var(--panel-padding);
   display: grid;
   align-content: start;
   gap: 16px;
@@ -730,7 +775,7 @@ textarea:focus-visible {
   border-radius: 999px 999px 0 0;
   background: linear-gradient(90deg, rgba(204, 0, 0, 0.78), rgba(251, 188, 4, 0.18));
   opacity: 0;
-  transition: opacity 180ms var(--ease);
+  transition: opacity var(--motion-med) var(--ease);
 }
 
 .sport-dashboard-card:hover::after,
@@ -748,7 +793,7 @@ textarea:focus-visible {
 
 .sport-dashboard-head h3 {
   margin: 5px 0 0;
-  font-size: 1.35rem;
+  font-size: var(--text-stat);
   line-height: 1.08;
 }
 
@@ -760,7 +805,7 @@ textarea:focus-visible {
   place-items: center;
   background: linear-gradient(135deg, #111111, #cc0000);
   color: #fff;
-  font-size: 1.25rem;
+  font-size: var(--text-stat);
 }
 
 .sport-dashboard-card p,
@@ -794,7 +839,7 @@ textarea:focus-visible {
 .detail-stat span {
   display: block;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -814,7 +859,7 @@ textarea:focus-visible {
   border: 1px solid rgba(204, 0, 0, 0.18);
   border-radius: var(--radius);
   background: linear-gradient(180deg, #fffafa, #ffffff);
-  padding: 14px;
+  padding: var(--space-4);
 }
 
 .golf-stat-grid {
@@ -829,16 +874,16 @@ textarea:focus-visible {
 
 .golf-mix-list {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .golf-mix-list div {
   display: grid;
   grid-template-columns: 88px 34px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 900;
 }
 
@@ -858,12 +903,12 @@ textarea:focus-visible {
 .sport-next-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .related-list {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .related-session {
@@ -871,7 +916,7 @@ textarea:focus-visible {
   border-radius: var(--radius);
   background: var(--surface-solid);
   color: var(--ink);
-  padding: 11px 12px;
+  padding: var(--space-3);
   text-align: left;
 }
 
@@ -883,7 +928,7 @@ textarea:focus-visible {
 .related-session span {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 800;
 }
 
@@ -897,27 +942,27 @@ textarea:focus-visible {
 
 .record-card {
   min-height: 210px;
-  padding: 18px;
+  padding: var(--card-padding);
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .record-card span {
   color: #cc0000;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .record-card strong {
-  font-size: 2.1rem;
+  font-size: clamp(1.7rem, 2.4vw, 2.1rem);
   line-height: 1;
 }
 
 .record-card h4 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-section);
   line-height: 1.12;
 }
 
@@ -976,7 +1021,7 @@ textarea:focus-visible {
 .today-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: 16px;
 }
 
@@ -984,23 +1029,23 @@ textarea:focus-visible {
   min-height: 172px;
   display: grid;
   align-content: start;
-  gap: 9px;
+  gap: var(--space-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 15px;
+  padding: var(--space-4);
 }
 
 .today-card span,
 .compact-control {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .today-card strong {
-  font-size: 1.35rem;
+  font-size: var(--text-stat);
   line-height: 1.05;
 }
 
@@ -1021,15 +1066,15 @@ textarea:focus-visible {
 
 .readiness-score,
 .checkin-status {
-  min-height: 42px;
+  min-height: var(--control-height);
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--control-radius);
   background: var(--surface-tint);
   color: var(--muted);
-  padding: 0 12px;
-  font-size: 0.82rem;
+  padding: 0 var(--space-3);
+  font-size: var(--text-ui);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -1049,10 +1094,10 @@ textarea:focus-visible {
 
 .drill-card {
   min-height: 250px;
-  padding: 18px;
+  padding: var(--card-padding);
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .drill-card span,
@@ -1063,13 +1108,13 @@ textarea:focus-visible {
 
 .drill-card span {
   color: #cc0000;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   text-transform: uppercase;
 }
 
 .drill-card h3 {
   margin: 0;
-  font-size: 1.18rem;
+  font-size: var(--text-card-title);
   line-height: 1.12;
 }
 
@@ -1118,7 +1163,7 @@ textarea:focus-visible {
   background: var(--surface-tint);
   color: var(--muted);
   padding: 5px 8px;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
 }
 
@@ -1143,7 +1188,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .program-summary h3,
@@ -1164,33 +1209,33 @@ textarea:focus-visible {
 
 .trend-card {
   min-height: 230px;
-  padding: 18px;
+  padding: var(--card-padding);
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .compact-control {
   min-width: 170px;
   display: grid;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .compact-control select {
-  min-height: 38px;
+  min-height: var(--control-height-sm);
   text-transform: none;
 }
 
 .trend-card h4 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: var(--text-section);
 }
 
 .line-bars {
   height: 126px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
   align-items: end;
 }
 
@@ -1198,7 +1243,7 @@ textarea:focus-visible {
   height: 100%;
   display: grid;
   align-items: end;
-  gap: 7px;
+  gap: var(--space-2);
 }
 
 .line-bars span {
@@ -1209,26 +1254,26 @@ textarea:focus-visible {
 
 .line-bars small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-label);
   font-weight: 900;
 }
 
 .stack-list {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .stack-list div {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) 44px;
-  gap: 10px;
+  gap: var(--space-3);
   align-items: center;
 }
 
 .stack-list strong,
 .stack-list small {
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: var(--text-caption);
   font-weight: 900;
 }
 
@@ -1257,7 +1302,7 @@ textarea:focus-visible {
 
 .compare-card,
 .compare-table {
-  padding: 18px;
+  padding: var(--card-padding);
 }
 
 .compare-card h3 {
@@ -1272,7 +1317,7 @@ textarea:focus-visible {
 .compare-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 11px 0;
   border-bottom: 1px solid var(--line);
 }
@@ -1290,25 +1335,25 @@ textarea:focus-visible {
   border: 1px solid rgba(204, 0, 0, 0.18);
   border-radius: var(--radius);
   background: #fffafa;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .lift-set-list,
 .lift-set-summary {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
   margin-top: 14px;
 }
 
 .lift-set-row {
   display: grid;
   grid-template-columns: minmax(160px, 1.3fr) 74px 74px 90px 74px auto;
-  gap: 10px;
+  gap: var(--space-3);
   align-items: center;
 }
 
 .lift-set-row input {
-  min-height: 40px;
+  min-height: var(--control-height-sm);
 }
 
 .install-button[hidden] {
@@ -1321,7 +1366,7 @@ textarea:focus-visible {
 
 .persistence-card {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   border-color: rgba(204, 0, 0, 0.18);
   background: linear-gradient(135deg, var(--surface-solid), #fff5f5);
 }
@@ -1329,12 +1374,12 @@ textarea:focus-visible {
 .import-mapper {
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: end;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-tint);
-  padding: 14px;
+  padding: var(--space-4);
 }
 
 .import-preview {
@@ -1343,21 +1388,21 @@ textarea:focus-visible {
 
 .import-preview-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .import-preview-list article {
   display: grid;
-  gap: 5px;
+  gap: var(--space-1);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 .import-preview-list span {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 900;
 }
 
@@ -1365,7 +1410,7 @@ textarea:focus-visible {
   height: 96px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
   align-items: end;
   margin-top: 6px;
 }
@@ -1374,7 +1419,7 @@ textarea:focus-visible {
   height: 100%;
   display: grid;
   align-items: end;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .chart-column span {
@@ -1387,25 +1432,25 @@ textarea:focus-visible {
 .chart-column small,
 .mix-list small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-label);
   font-weight: 900;
 }
 
 .mix-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .mix-list > div {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr) 28px;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .mix-list span {
   color: var(--ink);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 900;
 }
 
@@ -1418,7 +1463,7 @@ textarea:focus-visible {
 }
 
 .metric-card {
-  padding: 18px;
+  padding: var(--card-padding);
   min-height: 142px;
   display: grid;
   align-content: start;
@@ -1428,7 +1473,7 @@ textarea:focus-visible {
 
 .metric-card strong {
   display: block;
-  font-size: 2.25rem;
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
   line-height: 1;
   margin: 12px 0 8px;
   color: var(--ink);
@@ -1463,7 +1508,7 @@ textarea:focus-visible {
 }
 
 .panel {
-  padding: 20px;
+  padding: var(--panel-padding);
 }
 
 .week-plan,
@@ -1476,11 +1521,12 @@ textarea:focus-visible {
 }
 
 .insight-item {
-  padding: 14px 15px;
+  padding: var(--space-3) var(--space-4);
   border-left: 4px solid var(--green);
   border-radius: 0 var(--radius) var(--radius) 0;
   background: var(--surface-solid);
   color: var(--muted);
+  font-size: var(--text-body);
   line-height: 1.5;
 }
 
@@ -1488,14 +1534,14 @@ textarea:focus-visible {
 .session-card {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 13px;
+  padding: var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
   cursor: pointer;
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .week-day:hover,
@@ -1503,7 +1549,7 @@ textarea:focus-visible {
 .planned-session:hover,
 .calendar-item:hover,
 .related-session:hover {
-  transform: translateY(-1px);
+  transform: var(--press-lift);
   border-color: rgba(204, 0, 0, 0.22);
   background: var(--surface-hover);
   box-shadow: var(--shadow-sm);
@@ -1558,19 +1604,19 @@ textarea:focus-visible {
   border: 1px solid rgba(204, 0, 0, 0.2);
   border-radius: var(--radius);
   background: #fff5f5;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .session-detail-side {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-tint);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .session-detail-side h4 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--text-card-title);
 }
 
 .week-day strong,
@@ -1584,13 +1630,13 @@ textarea:focus-visible {
 }
 
 .session-date strong {
-  font-size: 0.96rem;
+  font-size: var(--text-body);
 }
 
 .session-date span,
 .session-meta span {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 800;
 }
 
@@ -1616,14 +1662,14 @@ textarea:focus-visible {
 }
 
 .session-actions .ghost-button {
-  min-height: 34px;
-  padding: 0 10px;
-  font-size: 0.78rem;
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--text-caption);
 }
 
 .week-day span:not(.tag) {
   color: var(--muted);
-  font-size: 0.93rem;
+  font-size: var(--text-body);
 }
 
 .tag {
@@ -1631,7 +1677,7 @@ textarea:focus-visible {
   background: #cc0000;
   border-radius: 999px;
   padding: 5px 9px;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -1646,22 +1692,22 @@ textarea:focus-visible {
   background: #202124;
   border-radius: 999px;
   padding: 6px 10px;
-  font-size: 0.76rem;
+  font-size: var(--text-caption);
   font-weight: 900;
 }
 
 .recommendation h4 {
   margin: 16px 0 8px;
-  font-size: 1.55rem;
+  font-size: var(--text-display);
   line-height: 1.05;
 }
 
 .log-form {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
   margin: 18px 0;
-  padding: 20px;
+  padding: var(--panel-padding);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1698,14 +1744,14 @@ textarea:focus-visible {
 }
 
 .history-count {
-  min-height: 44px;
+  min-height: var(--control-height);
   display: grid;
   place-items: center;
-  padding: 0 12px;
-  border-radius: var(--radius);
+  padding: 0 var(--space-3);
+  border-radius: var(--control-radius);
   background: var(--surface-solid);
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: var(--text-ui);
   font-weight: 900;
   white-space: nowrap;
 }
@@ -1733,7 +1779,7 @@ textarea:focus-visible {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .calendar-weekdays {
@@ -1742,13 +1788,13 @@ textarea:focus-visible {
 
 .calendar-weekdays span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .calendar-grid {
-  margin-top: 10px;
+  margin-top: var(--space-3);
 }
 
 .calendar-day {
@@ -1756,11 +1802,11 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-tint);
-  padding: 10px;
+  padding: var(--space-3);
   display: grid;
   align-content: start;
-  gap: 10px;
-  transition: border-color 160ms var(--ease), background 160ms var(--ease), box-shadow 160ms var(--ease);
+  gap: var(--space-3);
+  transition: border-color var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease);
 }
 
 .calendar-day.empty {
@@ -1777,7 +1823,7 @@ textarea:focus-visible {
 .gps-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 0.35fr);
-  gap: 18px;
+  gap: var(--card-padding);
   align-items: center;
   margin-bottom: 18px;
 }
@@ -1795,6 +1841,7 @@ textarea:focus-visible {
 .gps-hero p {
   max-width: 780px;
   color: var(--muted);
+  font-size: var(--text-body);
   line-height: 1.55;
 }
 
@@ -1806,7 +1853,7 @@ textarea:focus-visible {
 
 .gps-course-card {
   border-radius: var(--radius);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .gps-course-card span,
@@ -1820,20 +1867,20 @@ textarea:focus-visible {
 .club-recommendation h3 {
   display: block;
   margin: 6px 0;
-  font-size: 1.35rem;
+  font-size: var(--text-stat);
 }
 
 .gps-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(310px, 0.42fr);
-  gap: 18px;
+  gap: var(--card-padding);
 }
 
 .gps-main,
 .gps-side {
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .gps-hole-top,
@@ -1846,14 +1893,14 @@ textarea:focus-visible {
 
 .gps-hole-top h3 {
   margin: 5px 0 0;
-  font-size: 1.4rem;
+  font-size: var(--text-stat);
 }
 
 .gps-yardage-grid,
 .gps-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .gps-summary-grid {
@@ -1865,7 +1912,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 .gps-yardage-grid .primary {
@@ -1878,7 +1925,7 @@ textarea:focus-visible {
 .gps-target-list span {
   display: block;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -1887,7 +1934,7 @@ textarea:focus-visible {
 .gps-summary-grid strong {
   display: block;
   margin-top: 6px;
-  font-size: 1.35rem;
+  font-size: var(--text-stat);
 }
 
 .gps-map {
@@ -1959,7 +2006,7 @@ textarea:focus-visible {
   background: #fbbc04;
   color: #111;
   padding: 8px 10px;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   box-shadow: var(--shadow-sm);
 }
@@ -1977,14 +2024,14 @@ textarea:focus-visible {
 .gps-target-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .gps-target-list article {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 .gps-target-list strong,
@@ -1997,7 +2044,7 @@ textarea:focus-visible {
 .gps-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
   margin: 12px 0;
 }
 
@@ -2008,18 +2055,20 @@ textarea:focus-visible {
 .gps-scorecard {
   display: grid;
   grid-template-columns: repeat(18, minmax(48px, 1fr));
-  gap: 8px;
+  gap: var(--space-2);
   overflow-x: auto;
   padding-bottom: 4px;
 }
 
 .gps-scorecard button {
   min-width: 52px;
+  min-height: var(--control-height);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--control-radius);
   background: var(--surface-solid);
   color: var(--ink);
   padding: 10px 8px;
+  transition: border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .gps-scorecard button.active {
@@ -2036,7 +2085,7 @@ textarea:focus-visible {
 .gps-scorecard.compact div {
   min-width: 52px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--control-radius);
   background: var(--surface-solid);
   padding: 10px 8px;
 }
@@ -2046,7 +2095,7 @@ textarea:focus-visible {
 .gps-recap,
 .gps-shot-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .gps-hole-actions {
@@ -2059,11 +2108,11 @@ textarea:focus-visible {
   display: grid;
   grid-template-columns: 70px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 10px;
+  padding: var(--space-3);
 }
 
 .gps-shot-list p {
@@ -2078,18 +2127,18 @@ textarea:focus-visible {
 .gps-club-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .gps-club-grid label {
   display: grid;
   grid-template-columns: 1fr 70px 70px;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 10px;
+  padding: var(--space-3);
 }
 
 .gps-club-grid span {
@@ -2107,30 +2156,30 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .calendar-day-head span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
 }
 
 .calendar-items {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .calendar-item {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--control-radius);
   background: var(--surface-solid);
   color: var(--ink);
-  padding: 9px;
+  padding: var(--space-2);
   text-align: left;
   display: grid;
   gap: 3px;
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .calendar-item.planned {
@@ -2140,7 +2189,7 @@ textarea:focus-visible {
 .calendar-item span,
 .calendar-item small {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -2150,7 +2199,7 @@ textarea:focus-visible {
 }
 
 .calendar-item strong {
-  font-size: 0.82rem;
+  font-size: var(--text-caption);
   line-height: 1.1;
 }
 
@@ -2159,19 +2208,19 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-tint);
-  padding: 10px;
+  padding: var(--space-3);
 }
 
 .planner-day-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .planner-day-head strong {
-  font-size: 0.98rem;
+  font-size: var(--text-body);
 }
 
 .planner-day-head span,
@@ -2179,23 +2228,23 @@ textarea:focus-visible {
 .planned-session p,
 .planner-empty {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
   font-weight: 800;
 }
 
 .planner-day-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .planned-session {
   display: grid;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--space-3);
+  padding: var(--space-3);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .planned-session span {
@@ -2215,7 +2264,7 @@ textarea:focus-visible {
 
 .planner-empty {
   margin: 0;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px dashed var(--line);
   border-radius: var(--radius);
   text-align: center;
@@ -2224,37 +2273,37 @@ textarea:focus-visible {
 .planner-side {
   display: grid;
   align-content: start;
-  gap: 18px;
+  gap: var(--card-padding);
 }
 
 .planner-form {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .planner-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .summary-tile {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 .summary-tile strong {
   display: block;
-  font-size: 1.45rem;
+  font-size: var(--text-stat);
   line-height: 1;
 }
 
 .summary-tile span {
   display: block;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: var(--text-caption);
   font-weight: 900;
   margin-top: 6px;
 }
@@ -2267,7 +2316,7 @@ textarea:focus-visible {
 .goal-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
   margin-top: 18px;
 }
 
@@ -2275,33 +2324,33 @@ textarea:focus-visible {
   min-height: 178px;
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: var(--space-3);
   text-align: left;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
   color: var(--ink);
-  padding: 16px;
+  padding: var(--space-4);
   box-shadow: var(--shadow-sm);
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .goal-card.active,
 .goal-card:hover {
-  transform: translateY(-2px);
+  transform: var(--hover-lift);
   border-color: rgba(204, 0, 0, 0.5);
   box-shadow: var(--shadow-md);
 }
 
 .goal-card span {
   color: #cc0000;
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .goal-card strong {
-  font-size: 1.18rem;
+  font-size: var(--text-card-title);
   line-height: 1.12;
 }
 
@@ -2315,24 +2364,24 @@ textarea:focus-visible {
 .goal-detail {
   display: grid;
   align-content: start;
-  gap: 18px;
+  gap: var(--card-padding);
 }
 
 .goal-detail h3 {
   margin: 5px 0 10px;
-  font-size: 1.35rem;
+  font-size: var(--text-stat);
 }
 
 .goal-score {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-tint);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .goal-score strong {
   display: block;
-  font-size: 3rem;
+  font-size: clamp(2.2rem, 4vw, 3rem);
   line-height: 1;
 }
 
@@ -2346,8 +2395,8 @@ textarea:focus-visible {
 .goal-template-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .snackbar {
@@ -2361,13 +2410,13 @@ textarea:focus-visible {
   border-radius: 999px;
   background: #202124;
   color: #fff;
-  padding: 13px 18px;
+  padding: var(--space-3) var(--card-padding);
   box-shadow: var(--shadow-md);
-  font-size: 0.9rem;
+  font-size: var(--text-ui);
   font-weight: 900;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+  transition: opacity var(--motion-med) var(--ease), transform var(--motion-med) var(--ease);
 }
 
 .snackbar.show {
@@ -2380,7 +2429,7 @@ textarea:focus-visible {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   margin-top: 18px;
 }
 
@@ -2391,14 +2440,14 @@ textarea:focus-visible {
 .practice-quick-picks {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
   margin: 12px 0 0;
 }
 
 .timer-panel {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
   margin: 14px 0 0;
 }
 
@@ -2406,18 +2455,18 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .timer-card strong {
   display: block;
   margin-top: 4px;
-  font-size: 2.2rem;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -2431,8 +2480,8 @@ textarea:focus-visible {
 
 .timer-actions .primary-button,
 .timer-actions .ghost-button {
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
 }
 
 .practice-card {
@@ -2442,31 +2491,31 @@ textarea:focus-visible {
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
-  padding: 16px;
+  padding: var(--space-4);
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: var(--space-2);
   box-shadow: var(--shadow-sm);
-  transition: transform 160ms var(--ease), border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: transform var(--motion-fast) var(--ease), border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 .practice-card.active,
 .practice-card:hover {
-  transform: translateY(-2px);
+  transform: var(--hover-lift);
   border-color: rgba(204, 0, 0, 0.45);
-  box-shadow: 0 3px 8px rgba(60, 64, 67, 0.12), 0 12px 28px rgba(60, 64, 67, 0.1);
+  box-shadow: var(--shadow-md);
   background: var(--surface-hover);
 }
 
 .practice-card span {
   color: var(--green);
-  font-size: 0.72rem;
+  font-size: var(--text-label);
   text-transform: uppercase;
   font-weight: 900;
 }
 
 .practice-card strong {
-  font-size: 1.13rem;
+  font-size: var(--text-card-title);
   line-height: 1.1;
 }
 
@@ -2478,8 +2527,8 @@ textarea:focus-visible {
 .sport-fields {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  padding: 14px;
+  gap: var(--space-4);
+  padding: var(--space-4);
   background: #fff5f5;
   border: 1px solid rgba(204, 0, 0, 0.18);
   border-radius: var(--radius);
@@ -2491,10 +2540,10 @@ textarea:focus-visible {
 
 label {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--muted);
   font-weight: 900;
-  font-size: 0.82rem;
+  font-size: var(--text-caption);
 }
 
 input,
@@ -2502,14 +2551,14 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--control-radius);
   background: var(--surface-solid);
   color: var(--ink);
-  min-height: 44px;
-  padding: 10px 12px;
-  font-size: 0.92rem;
+  min-height: var(--control-height);
+  padding: 10px var(--space-3);
+  font-size: var(--text-ui);
   outline: none;
-  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  transition: border-color var(--motion-fast) var(--ease), box-shadow var(--motion-fast) var(--ease), background var(--motion-fast) var(--ease);
 }
 
 input:focus,
@@ -2533,7 +2582,7 @@ textarea {
 }
 
 .program-card {
-  padding: 20px;
+  padding: var(--panel-padding);
   min-height: 230px;
   display: flex;
   flex-direction: column;
@@ -2541,7 +2590,7 @@ textarea {
 
 .program-card h3 {
   margin: 12px 0 8px;
-  font-size: 1.28rem;
+  font-size: var(--text-card-title);
   line-height: 1.1;
 }
 
@@ -2564,7 +2613,7 @@ textarea {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr) 56px;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .progress-item .bar-track {
@@ -2578,7 +2627,7 @@ textarea {
 .body-map {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: var(--space-3);
   margin-top: 18px;
 }
 
@@ -2586,9 +2635,9 @@ textarea {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
-  padding: 14px;
+  padding: var(--space-4);
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .recovery-card.high {
@@ -2600,7 +2649,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .recovery-card-head span {
@@ -2609,7 +2658,7 @@ textarea {
 }
 
 .recovery-card label {
-  font-size: 0.78rem;
+  font-size: var(--text-caption);
 }
 
 body.dark {
@@ -2902,11 +2951,11 @@ body.dark .gps-map {
   }
 
   .hero-band {
-    padding: 24px;
+    padding: var(--space-6);
   }
 
   .hero-band h2 {
-    font-size: 2.25rem;
+    font-size: var(--text-display);
   }
 
   .week-day,
@@ -2950,12 +2999,12 @@ body.dark .gps-map {
     z-index: 30;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 4px;
+    gap: var(--space-1);
     border: 1px solid var(--line);
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.94);
     box-shadow: var(--shadow-md);
-    padding: 8px;
+    padding: var(--space-2);
     backdrop-filter: blur(18px);
   }
 
@@ -2972,7 +3021,7 @@ body.dark .gps-map {
     display: grid;
     place-items: center;
     gap: 2px;
-    font-size: 0.68rem;
+    font-size: var(--text-label);
     font-weight: 900;
   }
 
@@ -2992,7 +3041,7 @@ body.dark .gps-map {
     display: grid;
     place-items: center;
     border-radius: 999px;
-    font-size: 0.72rem;
+    font-size: var(--text-label);
   }
 
   .bottom-nav-item.active {
@@ -3017,7 +3066,7 @@ body.dark .gps-map {
     border-radius: 18px;
     background: #cc0000;
     color: #fff;
-    font-size: 1.65rem;
+    font-size: var(--text-display);
     font-weight: 900;
     box-shadow: var(--shadow-md);
   }

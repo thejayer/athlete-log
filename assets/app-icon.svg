@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Athlete Log icon">
+  <rect width="512" height="512" rx="112" fill="#111111"/>
+  <path d="M96 150h320v64H96z" fill="#ffffff"/>
+  <path d="M96 224h320v64H96z" fill="#cc0000"/>
+  <path d="M96 298h320v64H96z" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="78" fill="#111111" stroke="#ffffff" stroke-width="22"/>
+  <path d="M292 292l66 66" stroke="#cc0000" stroke-width="28" stroke-linecap="round"/>
+</svg>

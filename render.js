@@ -694,6 +694,7 @@ const renderProgramControls = () => {
   document.querySelector("#programFocus").innerHTML = programBlueprints.map((program) => `
     <option value="${program.id}">${program.title}</option>
   `).join("");
+  document.querySelector("#programFocus").value = activeProgramId;
 };
 
 const renderProfileSelectOptions = (selector, options, selectedValue) => {

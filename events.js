@@ -277,22 +277,35 @@ function setupEventListeners() {
     }
 
     const sportInput = event.target.closest("[data-profile-sport]");
-    if (!sportInput) return;
-    sportInput.closest(".profile-sport-card")?.classList.toggle("active", sportInput.checked);
+    if (sportInput) sportInput.closest(".profile-sport-card")?.classList.toggle("active", sportInput.checked);
+
+    athleteProfile = collectProfileForm();
+    activeGoalId = getProfileActiveGoalId(athleteProfile, activeGoalId);
+    activeProgramId = getProfileActiveProgramId(athleteProfile, activeProgramId);
+    renderProfile();
+    renderGoals();
+    renderDashboard();
+    renderSportDashboards();
+    renderPlanner();
+    renderProgress();
+    renderProgramControls();
+    renderPrograms();
   });
 
   document.querySelector("#profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
     athleteProfile = collectProfileForm();
-    activeGoalId = athleteProfile.goalId;
-    activeProgramId = getProfileProgramId();
+    activeGoalId = getProfileActiveGoalId(athleteProfile, activeGoalId);
+    activeProgramId = getProfileActiveProgramId(athleteProfile, getProfileProgramId());
     saveProfile();
     saveGoal();
+    saveProgram();
     renderProfile();
     renderGoals();
     renderDashboard();
     renderSportDashboards();
     renderProgress();
+    renderProgramControls();
     renderPrograms();
     renderPlanner();
     showToast("Profile saved and recommendations updated");
@@ -422,6 +435,7 @@ function setupEventListeners() {
   
   document.querySelector("#programFocus").addEventListener("change", () => {
     activeProgramId = document.querySelector("#programFocus").value;
+    saveProgram();
     renderProgramOutput();
   });
   
@@ -460,6 +474,7 @@ function setupEventListeners() {
     };
     activeProgramId = tagMap[button.dataset.programJump] || "hybrid-base";
     document.querySelector("#programFocus").value = activeProgramId;
+    saveProgram();
     renderProgramOutput();
   });
   
@@ -586,6 +601,9 @@ function setupEventListeners() {
       plannedSessions = Array.isArray(payload.plannedSessions) ? payload.plannedSessions.map(normalizePlan) : plannedSessions;
       recovery = Array.isArray(payload.recovery) ? payload.recovery : recovery;
       athleteProfile = payload.athleteProfile ? normalizeAthleteProfile(payload.athleteProfile) : athleteProfile;
+      activeGoalId = getProfileActiveGoalId(athleteProfile, normalizeGoalId(payload.activeGoalId, activeGoalId));
+      activeProgramId = getProfileActiveProgramId(athleteProfile, normalizeProgramId(payload.activeProgramId, activeProgramId));
+      athleteProfile = normalizeAthleteProfile({ ...athleteProfile, goalId: activeGoalId, activeGoalId, programId: activeProgramId, activeProgramId });
       customDrills = Array.isArray(payload.customDrills) ? payload.customDrills.map(normalizeCustomDrill) : customDrills;
       readinessCheckins = Array.isArray(payload.readinessCheckins) ? payload.readinessCheckins : readinessCheckins;
       golfClubBag = Array.isArray(payload.golfClubBag) ? normalizeGolfClubBag(payload.golfClubBag) : golfClubBag;
@@ -598,7 +616,6 @@ function setupEventListeners() {
         gpsSavedSessionId = payload.golfGpsRound.savedSessionId || null;
         gpsRoundScore = { ...defaultGpsRoundScore(), ...(payload.golfGpsRound.score || {}) };
       }
-      activeGoalId = payload.activeGoalId || activeGoalId;
       activeSessionId = sessions[0]?.id || null;
       saveSessions();
       savePlanner();
@@ -609,12 +626,14 @@ function setupEventListeners() {
       saveClubBag();
       saveGpsRound();
       saveGoal();
+      saveProgram();
       renderSessions();
       renderPlanner();
       renderGoals();
       renderBodyMap();
       renderProfile();
       renderSportDashboards();
+      renderProgramControls();
       renderPrograms();
       renderDashboard();
       renderProgress();

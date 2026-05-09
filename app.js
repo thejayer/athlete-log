@@ -2,6 +2,7 @@ const storageKey = "athleteLog.sessions.v1";
 const recoveryStorageKey = "athleteLog.recovery.v1";
 const plannerStorageKey = "athleteLog.planner.v1";
 const goalStorageKey = "athleteLog.goal.v1";
+const programStorageKey = "athleteLog.program.v1";
 const profileStorageKey = "athleteLog.profile.v1";
 const customDrillStorageKey = "athleteLog.customDrills.v1";
 const readinessStorageKey = "athleteLog.readiness.v1";
@@ -27,6 +28,24 @@ function getTemplate(type) {
 const getGoal = (goalId) => goals.find((goal) => goal.id === goalId) || goals[0];
 
 const getDefaultGoalForSport = (sport) => goals.find((goal) => goal.sport === sport || goal.relatedSports.includes(sport)) || goals[0];
+
+const normalizeGoalId = (goalId, fallback = goals[0].id) => goals.some((goal) => goal.id === goalId) ? goalId : fallback;
+
+const getDefaultProgramIdForSport = (sport) => {
+  if (sport === "Golf") return "golf-power";
+  if (sport === "Tennis") return "tennis-durability";
+  if (sport === "Pickleball") return "pickleball-resilience";
+  return "hybrid-base";
+};
+
+const normalizeProgramId = (programId, fallback = programBlueprints[0].id) => (
+  programBlueprints.some((program) => program.id === programId) ? programId : fallback
+);
+
+const findActiveItemId = (items) => {
+  if (!Array.isArray(items)) return null;
+  return items.find((item) => item?.active || item?.isActive || item?.selected)?.id || null;
+};
 
 
 const cloneItems = (items) => items.map((item) => ({
@@ -111,10 +130,11 @@ const normalizeProfileSports = (sports, primarySport) => {
   return selected.filter((sport, index, list) => knownSports.includes(sport) && list.indexOf(sport) === index);
 };
 
-const normalizeSportPriorities = (priorities = {}, activeSports = []) => {
+const normalizeSportPriorities = (priorities = {}, activeSports = [], primarySport = defaultProfile.primarySport) => {
   const source = priorities && typeof priorities === "object" && !Array.isArray(priorities) ? priorities : {};
+  const normalizedPrimary = getKnownSports().includes(primarySport) ? primarySport : defaultProfile.primarySport;
   return getKnownSports().reduce((clean, sport) => {
-    const fallback = sport === defaultProfile.primarySport ? "Primary" : activeSports.includes(sport) ? "Secondary" : "Support";
+    const fallback = sport === normalizedPrimary ? "Primary" : activeSports.includes(sport) ? "Secondary" : "Support";
     clean[sport] = profileSportRoles.includes(source[sport]) ? source[sport] : fallback;
     return clean;
   }, {});
@@ -127,8 +147,9 @@ const normalizeAthleteProfile = (profile = {}) => {
   const knownSports = getKnownSports();
   const primarySport = knownSports.includes(source.primarySport) ? source.primarySport : defaultProfile.primarySport;
   const activeSports = normalizeProfileSports(source.activeSports || source.playedSports, primarySport);
-  const sportPriorities = normalizeSportPriorities(source.sportPriorities, activeSports);
-  const goalId = goals.some((goal) => goal.id === source.goalId) ? source.goalId : getDefaultGoalForSport(primarySport).id;
+  const sportPriorities = normalizeSportPriorities(source.sportPriorities, activeSports, primarySport);
+  const goalId = normalizeGoalId(source.goalId || source.activeGoalId || findActiveItemId(source.goals), getDefaultGoalForSport(primarySport).id);
+  const programId = normalizeProgramId(source.programId || source.activeProgramId || findActiveItemId(source.programs), getDefaultProgramIdForSport(primarySport));
 
   return {
     ...defaultProfile,
@@ -138,6 +159,9 @@ const normalizeAthleteProfile = (profile = {}) => {
     activeSports,
     sportPriorities,
     goalId,
+    activeGoalId: normalizeGoalId(source.activeGoalId || findActiveItemId(source.goals) || goalId, goalId),
+    programId,
+    activeProgramId: normalizeProgramId(source.activeProgramId || findActiveItemId(source.programs) || programId, programId),
     weeklyDays: Math.max(1, Math.min(7, Number(source.weeklyDays) || defaultProfile.weeklyDays)),
     trainingDays: cleanCommaList(source.trainingDays, defaultProfile.trainingDays),
     trainingStyle: normalizeProfileOption(source.trainingStyle, profileTrainingStyles, defaultProfile.trainingStyle),
@@ -153,6 +177,8 @@ const normalizeAthleteProfile = (profile = {}) => {
 
 let athleteProfile = normalizeAthleteProfile(storedProfile);
 if (!localStorage.getItem(goalStorageKey) && athleteProfile.goalId) activeGoalId = athleteProfile.goalId;
+const storedProgramId = localStorage.getItem(programStorageKey);
+let activeProgramId = normalizeProgramId(storedProgramId, athleteProfile.programId);
 let snackbarTimer;
 let calendarCursor = new Date();
 calendarCursor.setDate(1);
@@ -161,7 +187,6 @@ let installPromptEvent = null;
 
 
 
-let activeProgramId = programBlueprints[0].id;
 const defaultGpsRoundScore = () => golfGpsCourse.holes.reduce((score, hole) => {
   score[hole.number] = {
     strokes: "",
@@ -243,6 +268,7 @@ const mirrorStateToDb = () => {
     writeDbState("plannedSessions", plannedSessions);
     writeDbState("recovery", recovery);
     writeDbState("activeGoalId", activeGoalId);
+    writeDbState("activeProgramId", activeProgramId);
     writeDbState("athleteProfile", athleteProfile);
     writeDbState("customDrills", customDrills);
     writeDbState("readinessCheckins", readinessCheckins);
@@ -271,6 +297,11 @@ const savePlanner = () => {
 
 const saveGoal = () => {
   localStorage.setItem(goalStorageKey, activeGoalId);
+  mirrorStateToDb();
+};
+
+const saveProgram = () => {
+  localStorage.setItem(programStorageKey, activeProgramId);
   mirrorStateToDb();
 };
 
@@ -314,12 +345,15 @@ const getProfileRecommendedTypes = () => {
   return [...new Set(types)].filter((type) => isProfileSportActive(getTemplate(type).sport));
 };
 
-const getProfileProgramId = () => {
-  if (athleteProfile.primarySport === "Golf") return "golf-power";
-  if (athleteProfile.primarySport === "Tennis") return "tennis-durability";
-  if (athleteProfile.primarySport === "Pickleball") return "pickleball-resilience";
-  return "hybrid-base";
-};
+const getProfileProgramId = () => normalizeProgramId(athleteProfile.programId, getDefaultProgramIdForSport(athleteProfile.primarySport));
+
+const getProfileActiveGoalId = (profile, fallback) => (
+  normalizeGoalId(profile.activeGoalId || findActiveItemId(profile.goals) || profile.goalId, fallback)
+);
+
+const getProfileActiveProgramId = (profile, fallback) => (
+  normalizeProgramId(profile.activeProgramId || findActiveItemId(profile.programs) || profile.programId, fallback)
+);
 
 const getProfileSummary = () => {
   const activeSports = getActiveSportProfiles();
@@ -775,6 +809,7 @@ const serializeLogData = () => ({
   plannedSessions,
   recovery,
   activeGoalId,
+  activeProgramId,
   athleteProfile,
   customDrills,
   readinessCheckins,

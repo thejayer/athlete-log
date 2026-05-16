@@ -24,7 +24,7 @@
 /**
  * @typedef {Object} LiftSet
  * @property {string} exercise
- * @property {number} setNumber
+ * @property {number} set - 1-indexed set number within the session.
  * @property {number} reps
  * @property {number} weight
  * @property {number} [rpe]

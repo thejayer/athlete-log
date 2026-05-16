@@ -11,16 +11,29 @@ function readFile(relPath) {
 }
 
 export function createLocalStorageStub(initial = {}) {
-  const store = new Map(Object.entries(initial));
+  const store = new Map(
+    Object.entries(initial).map(([key, value]) => [String(key), String(value)])
+  );
   return {
-    getItem: (key) => (store.has(key) ? store.get(key) : null),
-    setItem: (key, value) => store.set(key, String(value)),
-    removeItem: (key) => store.delete(key),
-    clear: () => store.clear(),
+    getItem(key) {
+      const stringKey = String(key);
+      return store.has(stringKey) ? store.get(stringKey) : null;
+    },
+    setItem(key, value) {
+      store.set(String(key), String(value));
+    },
+    removeItem(key) {
+      store.delete(String(key));
+    },
+    clear() {
+      store.clear();
+    },
     get length() {
       return store.size;
     },
-    key: (index) => Array.from(store.keys())[index] ?? null,
+    key(index) {
+      return Array.from(store.keys())[index] ?? null;
+    },
   };
 }
 

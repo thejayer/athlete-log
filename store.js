@@ -51,9 +51,26 @@ const store = (() => {
     if (cfg.serialize === "raw") {
       if (value == null) localStorage.removeItem(cfg.storageKey);
       else localStorage.setItem(cfg.storageKey, String(value));
-    } else {
-      localStorage.setItem(cfg.storageKey, JSON.stringify(value));
+      return;
     }
+    // Serialize defensively: JSON.stringify returns undefined for top-level
+    // undefined/functions/symbols, and throws on circular refs. In either
+    // case, clear the stored slot so localStorage cannot end up holding the
+    // literal string "undefined" (which would re-parse as the string
+    // "undefined" on the next page load).
+    let serialized;
+    try {
+      serialized = JSON.stringify(value);
+    } catch (error) {
+      console.error(`[store] failed to serialize slice "${slice}":`, error);
+      localStorage.removeItem(cfg.storageKey);
+      return;
+    }
+    if (serialized === undefined) {
+      localStorage.removeItem(cfg.storageKey);
+      return;
+    }
+    localStorage.setItem(cfg.storageKey, serialized);
   };
 
   // Per-listener try/catch so one throwing subscriber does not block the
@@ -77,8 +94,10 @@ const store = (() => {
 
   // Mutation is transactional: if localStorage rejects the write (quota
   // exceeded, private-mode restrictions, ...) we restore the prior slice so
-  // in-memory state cannot drift from what is actually persisted. mirrorFn
-  // already swallows its own errors, so it does not need a revert.
+  // in-memory state cannot drift from what is actually persisted.
+  // mirrorFn errors are surfaced but do not block subscribers from seeing
+  // the committed state - readers must not be left stale just because the
+  // IDB mirror failed.
   const update = (slice, updater) => {
     const prev = state[slice];
     const next = typeof updater === "function" ? updater(prev) : updater;
@@ -90,12 +109,18 @@ const store = (() => {
       state[slice] = prev;
       throw error;
     }
-    mirrorFn();
+    let mirrorError = null;
+    try {
+      mirrorFn();
+    } catch (error) {
+      mirrorError = error;
+    }
     if (batching > 0) {
       batchDirty = true;
     } else {
       notify();
     }
+    if (mirrorError) throw mirrorError;
   };
 
   // Group multiple updates so subscribers only see one snapshot. Reentrant:

@@ -141,6 +141,9 @@ describe("getPersonalRecords", () => {
 });
 
 describe("getRecommendation", () => {
+  /**
+   * @param {{ flag?: { area: string, score: number }, sportCounts?: Record<string, number>, checkinReadiness?: number }} [options]
+   */
   function makeStats({ flag, sportCounts = { Golf: 2 }, checkinReadiness = 80 } = {}) {
     return {
       highestFlag: flag ?? { area: "Shoulder", score: 1 },

@@ -35,6 +35,7 @@ const weekPlan = [
 
 const plannerDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+/** @type {import('./types').Goal[]} */
 const goals = [
   {
     id: "clubhead-speed",
@@ -576,6 +577,7 @@ const defaultPlannedSessions = [
   },
 ];
 
+/** @type {import('./types').RecoveryEntry[]} */
 const defaultRecovery = [
   { area: "Shoulder", score: 5, trend: "Same" },
   { area: "Elbow", score: 2, trend: "Better" },
@@ -586,6 +588,7 @@ const defaultRecovery = [
   { area: "Ankles", score: 3, trend: "Same" },
 ];
 
+/** @type {import('./types').Profile} */
 const defaultProfile = {
   name: "Athlete",
   primarySport: "Golf",
@@ -1053,6 +1056,7 @@ const golfClubDistances = [
   { club: "Putter", carry: 0 },
 ];
 
+/** @type {import('./types').Program[]} */
 const programBlueprints = [
   {
     id: "golf-power",

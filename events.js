@@ -1,3 +1,6 @@
+// @ts-nocheck -- DOM event wiring with widespread document.querySelector
+// access and untyped form payloads; type cleanup deferred until COM-89 splits
+// the wiring per feature and COM-150 surfaces a typed store API.
 const collectProfileForm = () => {
   const activeSports = [...document.querySelectorAll("[data-profile-sport]:checked")].map(
     (input) => input.dataset.profileSport

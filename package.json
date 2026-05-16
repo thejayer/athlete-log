@@ -7,6 +7,7 @@
     "check:js": "node --check utils.js && node --check data.js && node --check timers.js && node --check analytics.js && node --check render.js && node --check events.js && node --check app.js && node --check service-worker.js && node --check scripts/verify-app.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
@@ -18,10 +19,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^25.8.0",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",
     "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   }
 }

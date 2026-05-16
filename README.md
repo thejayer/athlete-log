@@ -7,16 +7,37 @@ Open `index.html` in a browser to try it.
 ## Development workflow
 
 - Open a pull request into `main` for changes.
-- GitHub Actions runs JavaScript syntax checks and static app integrity tests on every pull request.
+- GitHub Actions runs syntax checks, lint, format check, unit tests, and the static app integrity verifier on every pull request.
 - CodeRabbit reviews pull requests in GitHub before merge.
 - Merging to `main` runs the same checks and deploys the static app to GitHub Pages.
 
 Local checks:
 
 ```bash
-npm run check:js
-npm test
+npm run check:js       # node --check across each top-level JS file
+npm run lint           # eslint
+npm run format:check   # prettier --check
+npm test               # vitest run (unit tests)
+npm run test:verify    # static app integrity check (file presence, manifest, etc.)
 ```
+
+## Running tests
+
+Unit tests live in `tests/` next to a small `tests/helpers/loadAppContext.mjs`
+that loads the script-tag JS files into a Node `vm` sandbox so they can be
+exercised without a browser. Tests use Vitest:
+
+```bash
+npm test           # one-shot
+npm run test:watch # interactive watcher
+```
+
+Two test files today:
+
+- `tests/utils.test.mjs` — covers every export in `utils.js` (date helpers, safe storage, CSV row parsing) with happy-path and edge-case coverage.
+- `tests/analytics.test.mjs` — covers readiness scoring, week-bucket load (input to acute-to-chronic ratio), personal-record detection, and recommendation selection in `analytics.js`.
+
+Until the store extraction lands (COM-150), tests for `app.js`, `render.js`, and `events.js` are deliberately deferred — those files are tightly coupled to the DOM and to module-level globals.
 
 ## Current prototype
 

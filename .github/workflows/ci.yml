@@ -42,5 +42,8 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Run app integrity tests
+      - name: Run unit tests
         run: npm test
+
+      - name: Run app integrity verification
+        run: npm run test:verify

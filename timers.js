@@ -4,20 +4,28 @@ const timerState = {
   restSeconds: 90,
   restRunning: false,
   sessionInterval: null,
-  restInterval: null
+  restInterval: null,
 };
 
 function formatTimer(seconds) {
-  const minutes = Math.floor(seconds / 60).toString().padStart(2, "0");
-  const remainingSeconds = Math.max(0, seconds % 60).toString().padStart(2, "0");
+  const minutes = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const remainingSeconds = Math.max(0, seconds % 60)
+    .toString()
+    .padStart(2, "0");
   return `${minutes}:${remainingSeconds}`;
 }
 
 function renderTimers() {
   document.querySelector("#sessionTimer").textContent = formatTimer(timerState.sessionSeconds);
   document.querySelector("#restTimer").textContent = formatTimer(timerState.restSeconds);
-  document.querySelector("#startSessionTimer").textContent = timerState.sessionRunning ? "Running" : "Start";
-  document.querySelector("#startRestTimer").textContent = timerState.restRunning ? "Resting" : "Start rest";
+  document.querySelector("#startSessionTimer").textContent = timerState.sessionRunning
+    ? "Running"
+    : "Start";
+  document.querySelector("#startRestTimer").textContent = timerState.restRunning
+    ? "Resting"
+    : "Start rest";
 }
 
 function startSessionTimer() {

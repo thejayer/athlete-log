@@ -18,7 +18,7 @@ const requiredFiles = [
   "service-worker.js",
   "manifest.webmanifest",
   "assets/app-icon.svg",
-  "assets/court-course.svg"
+  "assets/court-course.svg",
 ];
 
 const requiredScripts = [
@@ -28,7 +28,7 @@ const requiredScripts = [
   "analytics.js",
   "render.js",
   "events.js",
-  "app.js"
+  "app.js",
 ];
 
 const errors = [];
@@ -52,16 +52,23 @@ for (const script of requiredScripts) {
 
 const manifest = exists("manifest.webmanifest") ? JSON.parse(read("manifest.webmanifest")) : {};
 if (manifest.name !== "Athlete Log") errors.push("manifest.webmanifest name should be Athlete Log");
-if (!Array.isArray(manifest.icons) || !manifest.icons.length) errors.push("manifest.webmanifest must define icons");
+if (!Array.isArray(manifest.icons) || !manifest.icons.length)
+  errors.push("manifest.webmanifest must define icons");
 
 const serviceWorker = exists("service-worker.js") ? read("service-worker.js") : "";
 for (const file of requiredFiles.filter((file) => file !== "service-worker.js")) {
   const cachePath = `./${file}`;
-  if (!serviceWorker.includes(cachePath)) errors.push(`service-worker.js does not cache ${cachePath}`);
+  if (!serviceWorker.includes(cachePath))
+    errors.push(`service-worker.js does not cache ${cachePath}`);
 }
 
 const appSource = requiredScripts.map((file) => read(file)).join("\n");
-for (const symbol of ["renderGolfGps", "saveGpsRoundToLog", "normalizeGolfClubBag", "parseCsvRow"]) {
+for (const symbol of [
+  "renderGolfGps",
+  "saveGpsRoundToLog",
+  "normalizeGolfClubBag",
+  "parseCsvRow",
+]) {
   if (!appSource.includes(symbol)) errors.push(`Expected app symbol missing: ${symbol}`);
 }
 

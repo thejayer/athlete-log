@@ -115,12 +115,28 @@ module.exports = [
     },
   },
 
-  // ESLint flat config itself.
+  // ESLint and Vitest flat configs themselves (CommonJS Node).
   {
-    files: ["eslint.config.js"],
+    files: ["eslint.config.js", "vitest.config.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...sharedRules,
+    },
+  },
+
+  // Vitest test files and helpers (ESM).
+  {
+    files: ["tests/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
       globals: {
         ...globals.node,
       },

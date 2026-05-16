@@ -1,3 +1,6 @@
+// @ts-nocheck -- DOM- and IDB-heavy state container; type cleanup is deferred
+// until COM-150 extracts the global state into a `store` module where shapes
+// can be encoded once and consumed via @type imports.
 const storageKey = "athleteLog.sessions.v1";
 const recoveryStorageKey = "athleteLog.recovery.v1";
 const plannerStorageKey = "athleteLog.planner.v1";

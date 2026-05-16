@@ -1,3 +1,6 @@
+// @ts-nocheck -- 1356 lines of DOM template rendering; type cleanup deferred
+// until COM-89 splits the renderer into feature modules and COM-150 supplies
+// a typed store the renderer can subscribe to.
 const renderPersistenceStatus = (
   title = "Local storage ready",
   detail = "Browser backup is available on this device."

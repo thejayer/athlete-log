@@ -16,6 +16,7 @@ Local checks:
 ```bash
 npm run check:js       # node --check across each top-level JS file
 npm run lint           # eslint
+npm run typecheck      # tsc --noEmit against JSDoc @typedefs in types.js
 npm run format:check   # prettier --check
 npm test               # vitest run (unit tests)
 npm run test:verify    # static app integrity check (file presence, manifest, etc.)

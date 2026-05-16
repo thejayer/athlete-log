@@ -11,9 +11,10 @@
 //
 // API (see COM-150 acceptance criteria):
 //   store.init({ values, persist }, mirrorFn?)  - one-time seed from app.js
-//   store.getState()                            - frozen snapshot (shallow clone)
+//   store.getState()                            - frozen snapshot (slices frozen one level deep)
 //   store.subscribe(listener)                   - unsubscribe via returned fn
 //   store.update(slice, updater)                - generic; updater can be fn or value
+//   store.batch(fn)                             - apply many updates, notify once
 //   store.updateSessions(fn) / updateRecovery(fn) / ...  - per-slice setters
 //   store.setActiveGoalId(id) / setActiveProgramId(id)   - scalar slices
 //
@@ -28,8 +29,21 @@ const store = (() => {
   const listeners = new Set();
   let mirrorFn = () => {};
   let notifying = false;
+  let batching = 0;
+  let batchDirty = false;
 
-  const getState = () => Object.freeze({ ...state });
+  // Freeze each slice one level deep so accidental in-place writes (e.g.,
+  // `state.recovery[0].score = 9`) fail loudly instead of silently bypassing
+  // persistSlice / mirrorFn / notify. Object.freeze is idempotent so it is
+  // safe to call repeatedly on the same internal reference.
+  const getState = () => {
+    const snapshot = {};
+    for (const key of Object.keys(state)) {
+      const value = state[key];
+      snapshot[key] = value && typeof value === "object" ? Object.freeze(value) : value;
+    }
+    return Object.freeze(snapshot);
+  };
 
   const persistSlice = (slice, value) => {
     const cfg = persistConfig[slice];
@@ -42,25 +56,62 @@ const store = (() => {
     }
   };
 
+  // Per-listener try/catch so one throwing subscriber does not block the
+  // others (e.g., a render error must not skip persistence-status updates).
   const notify = () => {
     if (notifying) return;
     notifying = true;
     try {
       const snapshot = getState();
-      listeners.forEach((fn) => fn(snapshot));
+      for (const listener of listeners) {
+        try {
+          listener(snapshot);
+        } catch (error) {
+          console.error("[store] subscriber threw:", error);
+        }
+      }
     } finally {
       notifying = false;
     }
   };
 
+  // Mutation is transactional: if localStorage rejects the write (quota
+  // exceeded, private-mode restrictions, ...) we restore the prior slice so
+  // in-memory state cannot drift from what is actually persisted. mirrorFn
+  // already swallows its own errors, so it does not need a revert.
   const update = (slice, updater) => {
     const prev = state[slice];
     const next = typeof updater === "function" ? updater(prev) : updater;
     if (next === prev) return;
     state[slice] = next;
-    persistSlice(slice, next);
+    try {
+      persistSlice(slice, next);
+    } catch (error) {
+      state[slice] = prev;
+      throw error;
+    }
     mirrorFn();
-    notify();
+    if (batching > 0) {
+      batchDirty = true;
+    } else {
+      notify();
+    }
+  };
+
+  // Group multiple updates so subscribers only see one snapshot. Reentrant:
+  // nested batches collapse into the outermost one. Errors thrown by `fn`
+  // still notify if any update succeeded, so subscribers do not stay stale.
+  const batch = (fn) => {
+    batching += 1;
+    try {
+      fn();
+    } finally {
+      batching -= 1;
+      if (batching === 0 && batchDirty) {
+        batchDirty = false;
+        notify();
+      }
+    }
   };
 
   const subscribe = (listener) => {
@@ -79,6 +130,7 @@ const store = (() => {
     getState,
     subscribe,
     update,
+    batch,
     updateSessions: (fn) => update("sessions", fn),
     updatePlannedSessions: (fn) => update("plannedSessions", fn),
     updateRecovery: (fn) => update("recovery", fn),

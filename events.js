@@ -660,16 +660,18 @@ function setupEventListeners() {
           }
         : current.gpsRound;
       activeSessionId = nextSessions[0]?.id || null;
-      store.updateSessions(() => nextSessions);
-      store.updatePlannedSessions(() => nextPlannedSessions);
-      store.updateRecovery(() => nextRecovery);
-      store.updateAthleteProfile(() => nextProfile);
-      store.updateCustomDrills(() => nextCustomDrills);
-      store.updateReadinessCheckins(() => nextReadinessCheckins);
-      store.updateGolfClubBag(() => nextClubBag);
-      store.updateGpsRound(() => nextGpsRound);
-      store.setActiveGoalId(nextActiveGoalId);
-      store.setActiveProgramId(nextActiveProgramId);
+      store.batch(() => {
+        store.updateSessions(() => nextSessions);
+        store.updatePlannedSessions(() => nextPlannedSessions);
+        store.updateRecovery(() => nextRecovery);
+        store.updateAthleteProfile(() => nextProfile);
+        store.updateCustomDrills(() => nextCustomDrills);
+        store.updateReadinessCheckins(() => nextReadinessCheckins);
+        store.updateGolfClubBag(() => nextClubBag);
+        store.updateGpsRound(() => nextGpsRound);
+        store.setActiveGoalId(nextActiveGoalId);
+        store.setActiveProgramId(nextActiveProgramId);
+      });
       document.querySelector("#importJsonText").value = "";
       showToast("Import complete");
     } catch (_error) {

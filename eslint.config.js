@@ -8,6 +8,7 @@ const prettierConfig = require("eslint-config-prettier");
 const browserScripts = [
   "utils.js",
   "data.js",
+  "store.js",
   "timers.js",
   "analytics.js",
   "render.js",

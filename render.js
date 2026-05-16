@@ -1417,23 +1417,21 @@ const renderBodyMap = () => {
 
   document.querySelectorAll("[data-recovery-score]").forEach((input) => {
     input.addEventListener("input", () => {
-      const item = recovery.find((part) => part.area === input.dataset.recoveryScore);
-      item.score = Number(input.value);
-      saveRecovery();
-      renderBodyMap();
-      renderDashboard();
-      renderProgress();
-      renderSportDashboards();
+      const area = input.dataset.recoveryScore;
+      const score = Number(input.value);
+      store.updateRecovery((list) =>
+        list.map((part) => (part.area === area ? { ...part, score } : part))
+      );
     });
   });
 
   document.querySelectorAll("[data-recovery-trend]").forEach((select) => {
     select.addEventListener("change", () => {
-      const item = recovery.find((part) => part.area === select.dataset.recoveryTrend);
-      item.trend = select.value;
-      saveRecovery();
-      renderDashboard();
-      renderSportDashboards();
+      const area = select.dataset.recoveryTrend;
+      const trend = select.value;
+      store.updateRecovery((list) =>
+        list.map((part) => (part.area === area ? { ...part, trend } : part))
+      );
     });
   });
 };

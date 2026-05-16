@@ -88,14 +88,9 @@ function setupEventListeners() {
       motivation: Number(document.querySelector("#checkinMotivation").value),
       note: document.querySelector("#checkinNote").value.trim(),
     };
-    readinessCheckins = [
-      checkin,
-      ...readinessCheckins.filter((item) => item.date !== checkin.date),
-    ].slice(0, 60);
-    saveReadiness();
-    renderDashboard();
-    renderProgress();
-    renderPlanner();
+    store.updateReadinessCheckins((list) =>
+      [checkin, ...list.filter((item) => item.date !== checkin.date)].slice(0, 60)
+    );
     showToast("Readiness check-in saved");
   });
 
@@ -141,15 +136,12 @@ function setupEventListeners() {
       createdAt: getCustomDrill(editingCustomDrillId)?.createdAt || getToday(),
     };
     if (editingCustomDrillId) {
-      customDrills = customDrills.map((item) => (item.id === editingCustomDrillId ? drill : item));
+      store.updateCustomDrills((list) =>
+        list.map((item) => (item.id === editingCustomDrillId ? drill : item))
+      );
     } else {
-      customDrills.unshift(drill);
+      store.updateCustomDrills((list) => [drill, ...list]);
     }
-    saveCustomDrills();
-    renderLibraryFilters();
-    renderDrillLibrary();
-    renderTemplates();
-    renderPlannerControls();
     resetCustomDrillForm();
     showToast(wasEditing ? "Custom template updated" : "Custom drill saved");
   });
@@ -190,50 +182,55 @@ function setupEventListeners() {
   document.querySelector("#golfGpsView").addEventListener("change", (event) => {
     if (event.target.closest("[data-club-row]")) return;
     if (event.target.id === "gpsWindAdjustment") {
-      gpsWindAdjustment = Number(event.target.value) || 0;
-      markGpsRoundDirty();
-      saveGpsRound();
-      renderGolfGps();
+      store.updateGpsRound((g) => ({
+        ...g,
+        windAdjustment: Number(event.target.value) || 0,
+        savedSessionId: null,
+      }));
       return;
     }
     if (event.target.id === "gpsElevationAdjustment") {
-      gpsElevationAdjustment = Number(event.target.value) || 0;
-      markGpsRoundDirty();
-      saveGpsRound();
-      renderGolfGps();
+      store.updateGpsRound((g) => ({
+        ...g,
+        elevationAdjustment: Number(event.target.value) || 0,
+        savedSessionId: null,
+      }));
       return;
     }
     if (event.target.id === "gpsTemperature") {
-      gpsTemperature = Number(event.target.value) || 72;
-      markGpsRoundDirty();
-      saveGpsRound();
-      renderGolfGps();
+      store.updateGpsRound((g) => ({
+        ...g,
+        temperature: Number(event.target.value) || 72,
+        savedSessionId: null,
+      }));
       return;
     }
     updateGpsHoleScore(true);
-    renderGolfGps();
   });
 
   document.querySelector("#golfGpsView").addEventListener("click", (event) => {
     const holeButton = event.target.closest("[data-gps-hole]");
     if (holeButton) {
       updateGpsHoleScore();
-      activeGpsHole = Number(holeButton.dataset.gpsHole);
-      renderGolfGps();
+      store.updateGpsRound((g) => ({ ...g, activeGpsHole: Number(holeButton.dataset.gpsHole) }));
       return;
     }
 
     if (event.target.closest("[data-gps-hole-prev]")) {
       updateGpsHoleScore();
-      activeGpsHole = activeGpsHole === 1 ? golfGpsCourse.holes.length : activeGpsHole - 1;
-      renderGolfGps();
+      store.updateGpsRound((g) => ({
+        ...g,
+        activeGpsHole: g.activeGpsHole === 1 ? golfGpsCourse.holes.length : g.activeGpsHole - 1,
+      }));
       return;
     }
 
     if (event.target.closest("[data-gps-hole-next]")) {
       updateGpsHoleScore();
-      activeGpsHole = activeGpsHole === golfGpsCourse.holes.length ? 1 : activeGpsHole + 1;
-      renderGolfGps();
+      store.updateGpsRound((g) => ({
+        ...g,
+        activeGpsHole: g.activeGpsHole === golfGpsCourse.holes.length ? 1 : g.activeGpsHole + 1,
+      }));
       return;
     }
 
@@ -305,35 +302,20 @@ function setupEventListeners() {
     if (sportInput)
       sportInput.closest(".profile-sport-card")?.classList.toggle("active", sportInput.checked);
 
-    athleteProfile = collectProfileForm();
-    activeGoalId = getProfileActiveGoalId(athleteProfile, activeGoalId);
-    activeProgramId = getProfileActiveProgramId(athleteProfile, activeProgramId);
-    renderProfile();
-    renderGoals();
-    renderDashboard();
-    renderSportDashboards();
-    renderPlanner();
-    renderProgress();
-    renderProgramControls();
-    renderPrograms();
+    const nextProfile = collectProfileForm();
+    store.updateAthleteProfile(() => nextProfile);
+    store.setActiveGoalId(getProfileActiveGoalId(nextProfile, store.getState().activeGoalId));
+    store.setActiveProgramId(
+      getProfileActiveProgramId(nextProfile, store.getState().activeProgramId)
+    );
   });
 
   document.querySelector("#profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    athleteProfile = collectProfileForm();
-    activeGoalId = getProfileActiveGoalId(athleteProfile, activeGoalId);
-    activeProgramId = getProfileActiveProgramId(athleteProfile, getProfileProgramId());
-    saveProfile();
-    saveGoal();
-    saveProgram();
-    renderProfile();
-    renderGoals();
-    renderDashboard();
-    renderSportDashboards();
-    renderProgress();
-    renderProgramControls();
-    renderPrograms();
-    renderPlanner();
+    const nextProfile = collectProfileForm();
+    store.updateAthleteProfile(() => nextProfile);
+    store.setActiveGoalId(getProfileActiveGoalId(nextProfile, store.getState().activeGoalId));
+    store.setActiveProgramId(getProfileActiveProgramId(nextProfile, getProfileProgramId()));
     showToast("Profile saved and recommendations updated");
   });
 
@@ -354,27 +336,26 @@ function setupEventListeners() {
       note: document.querySelector("#notes").value,
     };
 
-    if (editingSessionId) {
-      sessions = sessions.map((item) => (item.id === editingSessionId ? session : item));
-    } else {
-      sessions.unshift(session);
-    }
-
+    const wasEditingSessionId = editingSessionId;
     activeSessionId = session.id;
     editingSessionId = null;
-    saveSessions();
-    renderSessions();
+    if (wasEditingSessionId) {
+      store.updateSessions((list) =>
+        list.map((item) => (item.id === wasEditingSessionId ? session : item))
+      );
+    } else {
+      store.updateSessions((list) => [session, ...list]);
+    }
     updateEditState();
     showToast(wasEditing ? "Session updated" : "Session saved");
     setView("log");
   });
 
   document.querySelector("#resetLog").addEventListener("click", () => {
-    sessions = cloneItems(defaultSessions);
-    activeSessionId = sessions[0]?.id || null;
+    const restored = cloneItems(defaultSessions);
+    activeSessionId = restored[0]?.id || null;
     editingSessionId = null;
-    saveSessions();
-    renderSessions();
+    store.updateSessions(() => restored);
     updateEditState();
     showToast("Demo log restored");
   });
@@ -466,8 +447,7 @@ function setupEventListeners() {
   });
 
   document.querySelector("#programFocus").addEventListener("change", () => {
-    activeProgramId = document.querySelector("#programFocus").value;
-    saveProgram();
+    store.setActiveProgramId(document.querySelector("#programFocus").value);
     renderProgramOutput();
   });
 
@@ -479,17 +459,13 @@ function setupEventListeners() {
   });
 
   document.querySelector("#loadProgramWeek").addEventListener("click", () => {
-    plannedSessions = createProgramPlan(0);
-    savePlanner();
-    renderPlanner();
+    store.updatePlannedSessions(() => createProgramPlan(0));
     showToast("Week one loaded into planner");
     setView("planner");
   });
 
   document.querySelector("#loadSmartWeek").addEventListener("click", () => {
-    plannedSessions = createSmartProgramPlan();
-    savePlanner();
-    renderPlanner();
+    store.updatePlannedSessions(() => createSmartProgramPlan());
     showToast("Smart week adjusted from profile and readiness");
     setView("planner");
   });
@@ -504,9 +480,9 @@ function setupEventListeners() {
       Pickle: "pickleball-resilience",
       Hybrid: "hybrid-base",
     };
-    activeProgramId = tagMap[button.dataset.programJump] || "hybrid-base";
-    document.querySelector("#programFocus").value = activeProgramId;
-    saveProgram();
+    const nextProgramId = tagMap[button.dataset.programJump] || "hybrid-base";
+    store.setActiveProgramId(nextProgramId);
+    document.querySelector("#programFocus").value = nextProgramId;
     renderProgramOutput();
   });
 
@@ -528,12 +504,9 @@ function setupEventListeners() {
     }
 
     if (deleteButton) {
-      customDrills = customDrills.filter((drill) => drill.id !== deleteButton.dataset.drillDelete);
-      saveCustomDrills();
-      renderLibraryFilters();
-      renderDrillLibrary();
-      renderTemplates();
-      renderPlannerControls();
+      store.updateCustomDrills((list) =>
+        list.filter((drill) => drill.id !== deleteButton.dataset.drillDelete)
+      );
       showToast("Custom drill deleted");
       return;
     }
@@ -638,76 +611,65 @@ function setupEventListeners() {
     try {
       const payload = JSON.parse(document.querySelector("#importJsonText").value);
       if (!Array.isArray(payload.sessions)) throw new Error("Missing sessions array");
-      sessions = payload.sessions.map(normalizeSession);
-      plannedSessions = Array.isArray(payload.plannedSessions)
+      const current = store.getState();
+      const nextSessions = payload.sessions.map(normalizeSession);
+      const nextPlannedSessions = Array.isArray(payload.plannedSessions)
         ? payload.plannedSessions.map(normalizePlan)
-        : plannedSessions;
-      recovery = Array.isArray(payload.recovery) ? payload.recovery : recovery;
-      athleteProfile = payload.athleteProfile
+        : current.plannedSessions;
+      const nextRecovery = Array.isArray(payload.recovery) ? payload.recovery : current.recovery;
+      const importedProfile = payload.athleteProfile
         ? normalizeAthleteProfile(payload.athleteProfile)
-        : athleteProfile;
-      activeGoalId = getProfileActiveGoalId(
-        athleteProfile,
-        normalizeGoalId(payload.activeGoalId, activeGoalId)
+        : current.athleteProfile;
+      const nextActiveGoalId = getProfileActiveGoalId(
+        importedProfile,
+        normalizeGoalId(payload.activeGoalId, current.activeGoalId)
       );
-      activeProgramId = getProfileActiveProgramId(
-        athleteProfile,
-        normalizeProgramId(payload.activeProgramId, activeProgramId)
+      const nextActiveProgramId = getProfileActiveProgramId(
+        importedProfile,
+        normalizeProgramId(payload.activeProgramId, current.activeProgramId)
       );
-      athleteProfile = normalizeAthleteProfile({
-        ...athleteProfile,
-        goalId: activeGoalId,
-        activeGoalId,
-        programId: activeProgramId,
-        activeProgramId,
+      const nextProfile = normalizeAthleteProfile({
+        ...importedProfile,
+        goalId: nextActiveGoalId,
+        activeGoalId: nextActiveGoalId,
+        programId: nextActiveProgramId,
+        activeProgramId: nextActiveProgramId,
       });
-      customDrills = Array.isArray(payload.customDrills)
+      const nextCustomDrills = Array.isArray(payload.customDrills)
         ? payload.customDrills.map(normalizeCustomDrill)
-        : customDrills;
-      readinessCheckins = Array.isArray(payload.readinessCheckins)
+        : current.customDrills;
+      const nextReadinessCheckins = Array.isArray(payload.readinessCheckins)
         ? payload.readinessCheckins
-        : readinessCheckins;
-      golfClubBag = Array.isArray(payload.golfClubBag)
+        : current.readinessCheckins;
+      const nextClubBag = Array.isArray(payload.golfClubBag)
         ? normalizeGolfClubBag(payload.golfClubBag)
-        : golfClubBag;
-      if (payload.golfGpsRound) {
-        activeGpsHole = golfGpsCourse.holes.some(
-          (hole) => hole.number === Number(payload.golfGpsRound.activeGpsHole)
-        )
-          ? Number(payload.golfGpsRound.activeGpsHole)
-          : 1;
-        gpsWindAdjustment = Number(payload.golfGpsRound.windAdjustment) || 0;
-        gpsElevationAdjustment = Number(payload.golfGpsRound.elevationAdjustment) || 0;
-        gpsTemperature = Number(payload.golfGpsRound.temperature) || 72;
-        gpsRoundStartedAt = payload.golfGpsRound.startedAt || gpsRoundStartedAt;
-        gpsSavedSessionId = payload.golfGpsRound.savedSessionId || null;
-        gpsRoundScore = { ...defaultGpsRoundScore(), ...(payload.golfGpsRound.score || {}) };
-      }
-      activeSessionId = sessions[0]?.id || null;
-      saveSessions();
-      savePlanner();
-      saveRecovery();
-      saveProfile();
-      saveCustomDrills();
-      saveReadiness();
-      saveClubBag();
-      saveGpsRound();
-      saveGoal();
-      saveProgram();
-      renderSessions();
-      renderPlanner();
-      renderGoals();
-      renderBodyMap();
-      renderProfile();
-      renderSportDashboards();
-      renderProgramControls();
-      renderPrograms();
-      renderDashboard();
-      renderProgress();
-      renderLibraryFilters();
-      renderDrillLibrary();
-      renderTemplates();
-      renderGolfGps();
+        : current.golfClubBag;
+      const nextGpsRound = payload.golfGpsRound
+        ? {
+            activeGpsHole: golfGpsCourse.holes.some(
+              (hole) => hole.number === Number(payload.golfGpsRound.activeGpsHole)
+            )
+              ? Number(payload.golfGpsRound.activeGpsHole)
+              : 1,
+            windAdjustment: Number(payload.golfGpsRound.windAdjustment) || 0,
+            elevationAdjustment: Number(payload.golfGpsRound.elevationAdjustment) || 0,
+            temperature: Number(payload.golfGpsRound.temperature) || 72,
+            startedAt: payload.golfGpsRound.startedAt || current.gpsRound.startedAt,
+            savedSessionId: payload.golfGpsRound.savedSessionId || null,
+            score: { ...defaultGpsRoundScore(), ...(payload.golfGpsRound.score || {}) },
+          }
+        : current.gpsRound;
+      activeSessionId = nextSessions[0]?.id || null;
+      store.updateSessions(() => nextSessions);
+      store.updatePlannedSessions(() => nextPlannedSessions);
+      store.updateRecovery(() => nextRecovery);
+      store.updateAthleteProfile(() => nextProfile);
+      store.updateCustomDrills(() => nextCustomDrills);
+      store.updateReadinessCheckins(() => nextReadinessCheckins);
+      store.updateGolfClubBag(() => nextClubBag);
+      store.updateGpsRound(() => nextGpsRound);
+      store.setActiveGoalId(nextActiveGoalId);
+      store.setActiveProgramId(nextActiveProgramId);
       document.querySelector("#importJsonText").value = "";
       showToast("Import complete");
     } catch (_error) {
@@ -726,16 +688,15 @@ function setupEventListeners() {
   document.querySelector("#plannerForm").addEventListener("submit", (event) => {
     event.preventDefault();
     const planSelection = parsePlanTypeValue(document.querySelector("#planType").value);
-    plannedSessions.push({
+    const entry = {
       id: createId(),
       day: document.querySelector("#planDay").value,
       type: planSelection.type,
       customDrillId: planSelection.customDrillId,
       durationMinutes: Number(document.querySelector("#planDuration").value),
       priority: document.querySelector("#planPriority").value,
-    });
-    savePlanner();
-    renderPlanner();
+    };
+    store.updatePlannedSessions((list) => [...list, entry]);
     showToast("Session added to planner");
   });
 
@@ -748,9 +709,7 @@ function setupEventListeners() {
   });
 
   document.querySelector("#resetPlanner").addEventListener("click", () => {
-    plannedSessions = cloneItems(defaultPlannedSessions).map(normalizePlan);
-    savePlanner();
-    renderPlanner();
+    store.updatePlannedSessions(() => cloneItems(defaultPlannedSessions).map(normalizePlan));
     showToast("Planner reset");
   });
 
@@ -758,11 +717,8 @@ function setupEventListeners() {
     const button = event.target.closest("[data-goal-id]");
     if (!button) return;
 
-    activeGoalId = button.dataset.goalId;
-    saveGoal();
-    renderGoals();
-    renderDashboard();
-    showToast(`Goal set to ${getGoal(activeGoalId).title}`);
+    store.setActiveGoalId(button.dataset.goalId);
+    showToast(`Goal set to ${getGoal(button.dataset.goalId).title}`);
   });
 
   document.querySelector("#goalDetail").addEventListener("click", (event) => {
@@ -774,14 +730,7 @@ function setupEventListeners() {
   });
 
   document.querySelector("#resetRecovery").addEventListener("click", () => {
-    recovery = cloneItems(defaultRecovery);
-    saveRecovery();
-    renderBodyMap();
-    renderDashboard();
-    renderProgress();
-    renderPlanner();
-    renderGoals();
-    renderSportDashboards();
+    store.updateRecovery(() => cloneItems(defaultRecovery));
     showToast("Recovery reset");
   });
 }

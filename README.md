@@ -38,7 +38,7 @@ Two test files today:
 - `tests/utils.test.mjs` — covers every export in `utils.js` (date helpers, safe storage, CSV row parsing) with happy-path and edge-case coverage.
 - `tests/analytics.test.mjs` — covers readiness scoring, week-bucket load (input to acute-to-chronic ratio), personal-record detection, and recommendation selection in `analytics.js`.
 
-Until the store extraction lands (COM-150), tests for `app.js`, `render.js`, and `events.js` are deliberately deferred — those files are tightly coupled to the DOM and to module-level globals.
+Tests for `app.js`, `render.js`, and `events.js` are deliberately deferred — those files are tightly coupled to the DOM. Now that COM-150 has moved state into `store.js`, future tests can exercise store-driven flows without spinning up the DOM.
 
 ## Current prototype
 
@@ -81,6 +81,7 @@ Until the store extraction lands (COM-150), tests for `app.js`, `render.js`, and
 - Shared utility code now lives in `utils.js` for local date keys, safe storage reads, and CSV row parsing.
 - Workout and rest timer behavior now lives in `timers.js`.
 - Static catalog/default data now lives in `data.js`.
+- Mutable app state lives in `store.js` (sessions, planner, recovery, profile, custom drills, readiness check-ins, goal/program ids, club bag, GPS round). Mutations route through `store.updateX(fn)`; persistence and the IndexedDB mirror happen inside the store. `app.js` keeps local-var aliases that re-sync via `store.subscribe(...)` so the existing reads continue to work unchanged.
 - Readiness, scoring, records, progress, and recommendation logic now live in `analytics.js`.
 - Screen rendering now lives in `render.js`, and event wiring now lives in `events.js`.
 - Custom templates can now be edited, duplicated, show their created date, and be scheduled from the Planner.

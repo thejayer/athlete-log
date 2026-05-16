@@ -10,6 +10,7 @@ const requiredFiles = [
   "styles.css",
   "utils.js",
   "data.js",
+  "store.js",
   "timers.js",
   "analytics.js",
   "render.js",
@@ -24,6 +25,7 @@ const requiredFiles = [
 const requiredScripts = [
   "utils.js",
   "data.js",
+  "store.js",
   "timers.js",
   "analytics.js",
   "render.js",

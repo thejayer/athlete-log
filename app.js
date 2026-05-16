@@ -1,6 +1,6 @@
-// @ts-nocheck -- DOM- and IDB-heavy state container; type cleanup is deferred
-// until COM-150 extracts the global state into a `store` module where shapes
-// can be encoded once and consumed via @type imports.
+// @ts-nocheck -- DOM- and IDB-heavy state container. State now lives in
+// store.js (COM-150); the remaining type cleanup of app.js is tracked under
+// COM-154 alongside render.js / events.js / service-worker.js.
 const storageKey = "athleteLog.sessions.v1";
 const recoveryStorageKey = "athleteLog.recovery.v1";
 const plannerStorageKey = "athleteLog.planner.v1";
@@ -66,13 +66,12 @@ const normalizeSession = (session, index = 0) => ({
 });
 
 const storedSessions = readStoredJson(storageKey, null);
-let sessions = (Array.isArray(storedSessions) ? storedSessions : cloneItems(defaultSessions)).map(
-  normalizeSession
-);
+const initialSessions = (
+  Array.isArray(storedSessions) ? storedSessions : cloneItems(defaultSessions)
+).map(normalizeSession);
 let editingSessionId = null;
 let editingCustomDrillId = null;
-let activeSessionId = sessions[0]?.id || null;
-let activeGoalId = localStorage.getItem(goalStorageKey) || goals[0].id;
+let activeSessionId = initialSessions[0]?.id || null;
 
 const normalizePlan = (plan) => ({
   id: plan.id || createId(),
@@ -99,21 +98,22 @@ const normalizeCustomDrill = (drill) => {
 };
 
 const storedPlannedSessions = readStoredJson(plannerStorageKey, null);
-let plannedSessions = (
+const initialPlannedSessions = (
   Array.isArray(storedPlannedSessions) ? storedPlannedSessions : cloneItems(defaultPlannedSessions)
 ).map(normalizePlan);
 
 const storedRecovery = readStoredJson(recoveryStorageKey, null);
 const storedCustomDrills = readStoredJson(customDrillStorageKey, null);
 const storedReadinessCheckins = readStoredJson(readinessStorageKey, null);
-// eslint-disable-next-line prefer-const -- reassigned in events.js (script-tag globals); fix via COM-150 store extraction
-let recovery = Array.isArray(storedRecovery) ? storedRecovery : cloneItems(defaultRecovery);
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
-let customDrills = (Array.isArray(storedCustomDrills) ? storedCustomDrills : []).map(
+const initialRecovery = Array.isArray(storedRecovery)
+  ? storedRecovery
+  : cloneItems(defaultRecovery);
+const initialCustomDrills = (Array.isArray(storedCustomDrills) ? storedCustomDrills : []).map(
   normalizeCustomDrill
 );
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
-let readinessCheckins = Array.isArray(storedReadinessCheckins) ? storedReadinessCheckins : [];
+const initialReadinessCheckins = Array.isArray(storedReadinessCheckins)
+  ? storedReadinessCheckins
+  : [];
 const storedProfile = readStoredJson(profileStorageKey, null);
 const getKnownSports = () => sportProfiles.map((profile) => profile.sport);
 
@@ -241,18 +241,16 @@ const normalizeAthleteProfile = (profile = {}) => {
   };
 };
 
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
-let athleteProfile = normalizeAthleteProfile(storedProfile);
-if (!localStorage.getItem(goalStorageKey) && athleteProfile.goalId)
-  activeGoalId = athleteProfile.goalId;
+const initialAthleteProfile = normalizeAthleteProfile(storedProfile);
+const storedGoalId = localStorage.getItem(goalStorageKey);
+const initialActiveGoalId = storedGoalId || initialAthleteProfile.goalId || goals[0].id;
 const storedProgramId = localStorage.getItem(programStorageKey);
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
-let activeProgramId = normalizeProgramId(storedProgramId, athleteProfile.programId);
+const initialActiveProgramId = normalizeProgramId(storedProgramId, initialAthleteProfile.programId);
 let snackbarTimer;
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
+// eslint-disable-next-line prefer-const -- reassigned in events.js (calendar nav).
 let calendarCursor = new Date();
 calendarCursor.setDate(1);
-// eslint-disable-next-line prefer-const -- reassigned in events.js; fix via COM-150 store extraction
+// eslint-disable-next-line prefer-const -- reassigned in events.js (PWA install prompt).
 let installPromptEvent = null;
 
 const defaultGpsRoundScore = () =>
@@ -297,24 +295,102 @@ const normalizeGolfClubBag = (clubs) => {
   }));
 };
 const storedClubBag = readStoredJson(golfClubBagStorageKey, null);
-let golfClubBag = normalizeGolfClubBag(storedClubBag);
+const initialGolfClubBag = normalizeGolfClubBag(storedClubBag);
 const storedGpsRound = readStoredJson(golfGpsRoundStorageKey, null);
-let activeGpsHole = golfGpsCourse.holes.some(
-  (hole) => hole.number === Number(storedGpsRound?.activeGpsHole)
-)
-  ? Number(storedGpsRound.activeGpsHole)
-  : 1;
-let gpsWindAdjustment = Number(storedGpsRound?.windAdjustment) || 0;
-let gpsElevationAdjustment = Number(storedGpsRound?.elevationAdjustment) || 0;
-let gpsTemperature = Number(storedGpsRound?.temperature) || 72;
-let gpsRoundStartedAt = storedGpsRound?.startedAt || null;
-let gpsSavedSessionId = storedGpsRound?.savedSessionId || null;
-let gpsRoundScore = {
-  ...defaultGpsRoundScore(),
-  ...(storedGpsRound?.score && typeof storedGpsRound.score === "object"
-    ? storedGpsRound.score
-    : {}),
+const initialGpsRound = {
+  activeGpsHole: golfGpsCourse.holes.some(
+    (hole) => hole.number === Number(storedGpsRound?.activeGpsHole)
+  )
+    ? Number(storedGpsRound.activeGpsHole)
+    : 1,
+  windAdjustment: Number(storedGpsRound?.windAdjustment) || 0,
+  elevationAdjustment: Number(storedGpsRound?.elevationAdjustment) || 0,
+  temperature: Number(storedGpsRound?.temperature) || 72,
+  startedAt: storedGpsRound?.startedAt || null,
+  savedSessionId: storedGpsRound?.savedSessionId || null,
+  score: {
+    ...defaultGpsRoundScore(),
+    ...(storedGpsRound?.score && typeof storedGpsRound.score === "object"
+      ? storedGpsRound.score
+      : {}),
+  },
 };
+
+// Seed the store now that every initial slice has been computed. mirrorStateToDb
+// is wired below; we re-bind it after definition so it can read store snapshots
+// directly without going through the local-var aliases.
+store.init(
+  {
+    values: {
+      sessions: initialSessions,
+      plannedSessions: initialPlannedSessions,
+      recovery: initialRecovery,
+      customDrills: initialCustomDrills,
+      readinessCheckins: initialReadinessCheckins,
+      athleteProfile: initialAthleteProfile,
+      activeGoalId: initialActiveGoalId,
+      activeProgramId: initialActiveProgramId,
+      golfClubBag: initialGolfClubBag,
+      gpsRound: initialGpsRound,
+    },
+    persist: {
+      sessions: { storageKey },
+      plannedSessions: { storageKey: plannerStorageKey },
+      recovery: { storageKey: recoveryStorageKey },
+      customDrills: { storageKey: customDrillStorageKey },
+      readinessCheckins: { storageKey: readinessStorageKey },
+      athleteProfile: { storageKey: profileStorageKey },
+      activeGoalId: { storageKey: goalStorageKey, serialize: "raw" },
+      activeProgramId: { storageKey: programStorageKey, serialize: "raw" },
+      golfClubBag: { storageKey: golfClubBagStorageKey },
+      gpsRound: { storageKey: golfGpsRoundStorageKey },
+    },
+  },
+  () => mirrorStateToDb()
+);
+
+// Local aliases kept in sync with the store. The script-tag files have ~350
+// read sites for these names; the subscriber below refreshes them after every
+// mutation so existing reads keep working unchanged.
+let sessions;
+let plannedSessions;
+let recovery;
+let customDrills;
+let readinessCheckins;
+let athleteProfile;
+let activeGoalId;
+let activeProgramId;
+let golfClubBag;
+let activeGpsHole;
+let gpsWindAdjustment;
+let gpsElevationAdjustment;
+let gpsTemperature;
+let gpsRoundStartedAt;
+let gpsSavedSessionId;
+let gpsRoundScore;
+
+const syncLocalStateFromStore = () => {
+  const s = store.getState();
+  sessions = s.sessions;
+  plannedSessions = s.plannedSessions;
+  recovery = s.recovery;
+  customDrills = s.customDrills;
+  readinessCheckins = s.readinessCheckins;
+  athleteProfile = s.athleteProfile;
+  activeGoalId = s.activeGoalId;
+  activeProgramId = s.activeProgramId;
+  golfClubBag = s.golfClubBag;
+  const g = s.gpsRound || {};
+  activeGpsHole = g.activeGpsHole;
+  gpsWindAdjustment = g.windAdjustment;
+  gpsElevationAdjustment = g.elevationAdjustment;
+  gpsTemperature = g.temperature;
+  gpsRoundStartedAt = g.startedAt;
+  gpsSavedSessionId = g.savedSessionId;
+  gpsRoundScore = g.score;
+};
+syncLocalStateFromStore();
+store.subscribe(syncLocalStateFromStore);
 
 const openAthleteDb = () =>
   new Promise((resolve, reject) => {
@@ -343,16 +419,17 @@ const writeDbState = (key, value) => {
 
 const mirrorStateToDb = () => {
   try {
-    writeDbState("sessions", sessions);
-    writeDbState("plannedSessions", plannedSessions);
-    writeDbState("recovery", recovery);
-    writeDbState("activeGoalId", activeGoalId);
-    writeDbState("activeProgramId", activeProgramId);
-    writeDbState("athleteProfile", athleteProfile);
-    writeDbState("customDrills", customDrills);
-    writeDbState("readinessCheckins", readinessCheckins);
-    writeDbState("golfClubBag", golfClubBag);
-    writeDbState("golfGpsRound", getGpsRoundState());
+    const s = store.getState();
+    writeDbState("sessions", s.sessions);
+    writeDbState("plannedSessions", s.plannedSessions);
+    writeDbState("recovery", s.recovery);
+    writeDbState("activeGoalId", s.activeGoalId);
+    writeDbState("activeProgramId", s.activeProgramId);
+    writeDbState("athleteProfile", s.athleteProfile);
+    writeDbState("customDrills", s.customDrills);
+    writeDbState("readinessCheckins", s.readinessCheckins);
+    writeDbState("golfClubBag", s.golfClubBag);
+    writeDbState("golfGpsRound", s.gpsRound);
     writeDbState("lastSyncedAt", new Date().toISOString());
   } catch (_error) {
     renderPersistenceStatus(
@@ -360,46 +437,6 @@ const mirrorStateToDb = () => {
       "IndexedDB backup could not update, so localStorage is carrying the save."
     );
   }
-};
-
-const saveSessions = () => {
-  localStorage.setItem(storageKey, JSON.stringify(sessions));
-  mirrorStateToDb();
-};
-
-const saveRecovery = () => {
-  localStorage.setItem(recoveryStorageKey, JSON.stringify(recovery));
-  mirrorStateToDb();
-};
-
-const savePlanner = () => {
-  localStorage.setItem(plannerStorageKey, JSON.stringify(plannedSessions));
-  mirrorStateToDb();
-};
-
-const saveGoal = () => {
-  localStorage.setItem(goalStorageKey, activeGoalId);
-  mirrorStateToDb();
-};
-
-const saveProgram = () => {
-  localStorage.setItem(programStorageKey, activeProgramId);
-  mirrorStateToDb();
-};
-
-const saveProfile = () => {
-  localStorage.setItem(profileStorageKey, JSON.stringify(athleteProfile));
-  mirrorStateToDb();
-};
-
-const saveCustomDrills = () => {
-  localStorage.setItem(customDrillStorageKey, JSON.stringify(customDrills));
-  mirrorStateToDb();
-};
-
-const saveReadiness = () => {
-  localStorage.setItem(readinessStorageKey, JSON.stringify(readinessCheckins));
-  mirrorStateToDb();
 };
 
 const getProfileSports = () =>
@@ -479,26 +516,6 @@ const getProfileSummary = () => {
   };
 };
 
-const getGpsRoundState = () => ({
-  activeGpsHole,
-  windAdjustment: gpsWindAdjustment,
-  elevationAdjustment: gpsElevationAdjustment,
-  temperature: gpsTemperature,
-  startedAt: gpsRoundStartedAt,
-  savedSessionId: gpsSavedSessionId,
-  score: gpsRoundScore,
-});
-
-const saveClubBag = () => {
-  localStorage.setItem(golfClubBagStorageKey, JSON.stringify(golfClubBag));
-  mirrorStateToDb();
-};
-
-const saveGpsRound = () => {
-  localStorage.setItem(golfGpsRoundStorageKey, JSON.stringify(getGpsRoundState()));
-  mirrorStateToDb();
-};
-
 const showToast = (message) => {
   const snackbar = document.querySelector("#snackbar");
   snackbar.textContent = message;
@@ -562,13 +579,9 @@ const getRecommendedClub = (yardage = getAdjustedYardage()) => {
   );
 };
 
-const markGpsRoundDirty = () => {
-  gpsSavedSessionId = null;
-};
-
 const updateGpsHoleScore = (markDirty = false) => {
   const hole = getActiveGpsHole();
-  gpsRoundScore[hole.number] = {
+  const nextEntry = {
     strokes: document.querySelector("#gpsStrokes")?.value || "",
     putts: document.querySelector("#gpsPutts")?.value || "",
     fairway: document.querySelector("#gpsFairway")?.value || "Hit",
@@ -581,8 +594,11 @@ const updateGpsHoleScore = (markDirty = false) => {
     strategyNote: document.querySelector("#gpsStrategyNote")?.value || "",
     shots: getGpsHoleScore(hole.number).shots || [],
   };
-  if (markDirty) markGpsRoundDirty();
-  saveGpsRound();
+  store.updateGpsRound((g) => ({
+    ...g,
+    score: { ...g.score, [hole.number]: nextEntry },
+    ...(markDirty ? { savedSessionId: null } : {}),
+  }));
 };
 
 const getGpsRoundTotals = () => {
@@ -675,46 +691,50 @@ const addGpsShot = () => {
     shotType: score.shotType || "Stock",
     distance: getAdjustedYardage(hole),
   };
-  gpsRoundScore[hole.number] = {
-    ...score,
-    shots: [...(score.shots || []), shot],
-  };
-  markGpsRoundDirty();
-  saveGpsRound();
+  store.updateGpsRound((g) => ({
+    ...g,
+    score: { ...g.score, [hole.number]: { ...score, shots: [...(score.shots || []), shot] } },
+    savedSessionId: null,
+  }));
 };
 
 const removeGpsShot = (shotId) => {
   const hole = getActiveGpsHole();
   const score = getGpsHoleScore(hole.number);
-  gpsRoundScore[hole.number] = {
-    ...score,
-    shots: (score.shots || []).filter((shot) => shot.id !== shotId),
-  };
-  markGpsRoundDirty();
-  saveGpsRound();
+  store.updateGpsRound((g) => ({
+    ...g,
+    score: {
+      ...g.score,
+      [hole.number]: {
+        ...score,
+        shots: (score.shots || []).filter((shot) => shot.id !== shotId),
+      },
+    },
+    savedSessionId: null,
+  }));
 };
 
 const updateClubBagFromForm = () => {
-  golfClubBag = normalizeGolfClubBag(
+  const nextBag = normalizeGolfClubBag(
     [...document.querySelectorAll("[data-club-row]")].map((row) => ({
       club: row.querySelector("[data-club-name]").textContent.trim(),
       carry: Number(row.querySelector("[data-club-carry]").value) || 0,
       total: Number(row.querySelector("[data-club-total]").value) || 0,
     }))
   );
-  saveClubBag();
+  store.updateGolfClubBag(() => nextBag);
 };
 
 const resetGpsRound = () => {
-  activeGpsHole = 1;
-  gpsWindAdjustment = 0;
-  gpsElevationAdjustment = 0;
-  gpsTemperature = 72;
-  gpsRoundStartedAt = new Date().toISOString();
-  gpsSavedSessionId = null;
-  gpsRoundScore = defaultGpsRoundScore();
-  saveGpsRound();
-  renderGolfGps();
+  store.updateGpsRound(() => ({
+    activeGpsHole: 1,
+    windAdjustment: 0,
+    elevationAdjustment: 0,
+    temperature: 72,
+    startedAt: new Date().toISOString(),
+    savedSessionId: null,
+    score: defaultGpsRoundScore(),
+  }));
   showToast("GPS round reset");
 };
 
@@ -760,13 +780,9 @@ const saveGpsRoundToLog = () => {
     note: `GPS round at ${golfGpsCourse.name}. ${totals.holes} holes, ${totals.strokes} strokes (${totals.toPar >= 0 ? "+" : ""}${totals.toPar}), ${totals.fairways}/${totals.fairwayHoles} fairways, ${totals.greens} GIR, ${totals.putts} putts. ${getGpsRoundInsights().recap} ${getGpsRoundInsights().practicePlan}`,
   };
 
-  sessions.unshift(roundSession);
   activeSessionId = roundSession.id;
-  gpsSavedSessionId = roundSession.id;
-  saveSessions();
-  saveGpsRound();
-  renderSessions();
-  renderGolfGps();
+  store.updateSessions((list) => [roundSession, ...list]);
+  store.updateGpsRound((g) => ({ ...g, savedSessionId: roundSession.id }));
   showToast("GPS round saved to golf log");
   setView("log", { focus: true });
 };
@@ -944,7 +960,7 @@ const serializeLogData = () => ({
   customDrills,
   readinessCheckins,
   golfClubBag,
-  golfGpsRound: getGpsRoundState(),
+  golfGpsRound: store.getState().gpsRound,
 });
 
 const downloadTextFile = (filename, content, mimeType) => {
@@ -1033,17 +1049,13 @@ const duplicateCustomDrill = (drillId) => {
   const drill = getCustomDrill(drillId);
   if (!drill) return;
 
-  customDrills.unshift({
+  const copy = {
     ...drill,
     id: createDrillId(),
     title: `${drill.title} copy`,
     createdAt: getToday(),
-  });
-  saveCustomDrills();
-  renderLibraryFilters();
-  renderDrillLibrary();
-  renderTemplates();
-  renderPlannerControls();
+  };
+  store.updateCustomDrills((list) => [copy, ...list]);
   showToast("Custom template duplicated");
 };
 
@@ -1077,22 +1089,14 @@ const completePlannedSession = (planId) => {
       ? `Completed from weekly planner custom template: ${customDrill.title}. ${customDrill.detail} Cue: ${customDrill.cue}`
       : `Completed from weekly planner. ${template.notes}`,
   };
-  sessions.unshift(completedSession);
   activeSessionId = completedSession.id;
-  plannedSessions = plannedSessions.filter((item) => item.id !== planId);
-  saveSessions();
-  savePlanner();
-  renderPlanner();
-  renderSessions();
-  renderGoals();
+  store.updateSessions((list) => [completedSession, ...list]);
+  store.updatePlannedSessions((list) => list.filter((item) => item.id !== planId));
   showToast("Planned session completed and added to log");
 };
 
 const deletePlannedSession = (planId) => {
-  plannedSessions = plannedSessions.filter((item) => item.id !== planId);
-  savePlanner();
-  renderPlanner();
-  renderGoals();
+  store.updatePlannedSessions((list) => list.filter((item) => item.id !== planId));
   showToast("Planned session removed");
 };
 
@@ -1241,10 +1245,8 @@ const duplicateSession = (sessionId) => {
     date: getToday(),
     note: `${session.note} Duplicated from ${formatDate(session.date)}.`,
   };
-  sessions.unshift(duplicated);
   activeSessionId = duplicated.id;
-  saveSessions();
-  renderSessions();
+  store.updateSessions((list) => [duplicated, ...list]);
   showToast("Session duplicated");
 };
 
@@ -1257,7 +1259,7 @@ const saveSessionAsTemplate = (sessionId) => {
   const existing = customDrills.some(
     (drill) => drill.title === title && drill.type === session.type
   );
-  customDrills.unshift({
+  const newDrill = {
     id: createDrillId(),
     sport: template.sport,
     type: session.type,
@@ -1266,26 +1268,21 @@ const saveSessionAsTemplate = (sessionId) => {
     detail: getSessionSummary(session) || template.description,
     cue: session.note || "Repeat the structure, then adjust the target based on readiness.",
     createdAt: getToday(),
-  });
-  saveCustomDrills();
-  renderLibraryFilters();
-  renderDrillLibrary();
-  renderTemplates();
-  renderPlannerControls();
+  };
+  store.updateCustomDrills((list) => [newDrill, ...list]);
   showToast("Session saved as custom template");
 };
 
 const deleteSession = (sessionId) => {
-  sessions = sessions.filter((item) => item.id !== sessionId);
+  const remaining = sessions.filter((item) => item.id !== sessionId);
   if (activeSessionId === sessionId) {
-    activeSessionId = sessions[0]?.id || null;
+    activeSessionId = remaining[0]?.id || null;
   }
   if (editingSessionId === sessionId) {
     editingSessionId = null;
     applyTemplate(document.querySelector("#sessionType").value);
   }
-  saveSessions();
-  renderSessions();
+  store.updateSessions(() => remaining);
   showToast("Session deleted");
 };
 
@@ -1311,28 +1308,36 @@ const setView = (viewId, options = {}) => {
   }
 };
 
+// Single render pass; called on startup and after every store mutation.
+// Replaces the cluster of manual render calls that previously had to be
+// tacked onto each event handler.
+const renderAll = () => {
+  renderWeek();
+  renderSessionOptions();
+  renderHistoryFilters();
+  renderProgressFilters();
+  renderPlannerControls();
+  renderProgramControls();
+  renderLibraryFilters();
+  renderCustomDrillTypeOptions();
+  renderProfile();
+  renderTemplates();
+  renderDrillLibrary();
+  renderSessions();
+  renderPrograms();
+  renderPlanner();
+  renderGoals();
+  renderBodyMap();
+  renderGolfGps();
+  renderDashboard();
+  renderProgress();
+  renderTimers();
+  renderImportPreview();
+};
+
 setupEventListeners();
-renderWeek();
-renderSessionOptions();
-renderHistoryFilters();
-renderProgressFilters();
-renderPlannerControls();
-renderProgramControls();
-renderLibraryFilters();
-renderCustomDrillTypeOptions();
-renderProfile();
-renderTemplates();
-renderDrillLibrary();
-renderSessions();
-renderPrograms();
-renderPlanner();
-renderGoals();
-renderBodyMap();
-renderGolfGps();
-renderDashboard();
-renderProgress();
-renderTimers();
-renderImportPreview();
+renderAll();
+store.subscribe(renderAll);
 setView("dashboard");
 applyTemplate(sessionTemplates[0].type);
 

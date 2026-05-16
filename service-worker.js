@@ -1,13 +1,14 @@
 // @ts-nocheck -- ServiceWorkerGlobalScope is a separate lib from DOM; type
 // cleanup happens in COM-152 (service worker hardening) where the SW also
 // gets versioning and an update flow.
-const cacheName = "athlete-log-v9";
+const cacheName = "athlete-log-v10";
 const appShell = [
   "./",
   "./index.html",
   "./styles.css",
   "./utils.js",
   "./data.js",
+  "./store.js",
   "./timers.js",
   "./analytics.js",
   "./render.js",

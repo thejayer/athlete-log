@@ -4,7 +4,7 @@
   "private": true,
   "description": "Sport training log for golf, tennis, pickleball, lifting, endurance, and GPS-style golf rounds.",
   "scripts": {
-    "check:js": "node --check utils.js && node --check data.js && node --check timers.js && node --check analytics.js && node --check render.js && node --check events.js && node --check app.js && node --check service-worker.js && node --check scripts/verify-app.js",
+    "check:js": "node --check utils.js && node --check data.js && node --check store.js && node --check timers.js && node --check analytics.js && node --check render.js && node --check events.js && node --check app.js && node --check service-worker.js && node --check scripts/verify-app.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",

@@ -18,6 +18,7 @@
     "types.js",
     "utils.js",
     "data.js",
+    "store.js",
     "timers.js",
     "analytics.js",
     "render.js",

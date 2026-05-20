@@ -59,7 +59,15 @@ const sharedRules = {
 
 module.exports = [
   {
-    ignores: ["node_modules/**", "dist/**", "coverage/**"],
+    ignores: [
+      "node_modules/**",
+      "dist/**",
+      "coverage/**",
+      // csc-architecture-reviewer is a self-contained subproject with its own
+      // package.json, Vitest, and ESLint config (when added). Keep it out of
+      // the parent repo's lint pass so the two can evolve independently.
+      "csc-architecture-reviewer/**",
+    ],
   },
 
   // Browser script-tag files. `no-implicit-globals` is intentionally off here

@@ -1,0 +1,24 @@
+{
+  "name": "@csc/architecture-reviewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Opinionated GCP / Firebase / Cloud Run / Linear architecture & security reviewer for Commerce Street Capital pull requests.",
+  "bin": {
+    "csc-review": "src/index.js"
+  },
+  "scripts": {
+    "csc:review": "node src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}

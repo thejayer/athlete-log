@@ -3,6 +3,9 @@ dist
 coverage
 package-lock.json
 
+# Self-contained subproject — manages its own formatting.
+csc-architecture-reviewer/
+
 # Out of scope for the COM-147 lint + format pass. Track formatting these
 # under a follow-up after the JS baseline is in place.
 *.html

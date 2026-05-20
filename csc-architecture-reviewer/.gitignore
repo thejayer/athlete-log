@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+*.log
+csc-review.md
+csc-review.json
+.review-output/

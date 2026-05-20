@@ -1,0 +1,87 @@
+# CSC Architecture Reviewer — default configuration.
+# Override per-repo by copying this file to the repo root or passing --config.
+
+# Linear issue keys accepted in branch / PR title / commit messages.
+allowed_linear_prefixes:
+  - CSC
+  - CRM
+  - VDR
+  - PLAT
+  - COMP
+  - PORT
+
+# Cloud Run services that are intentionally public (e.g. marketing site).
+allow_public_cloud_run_services:
+  - about-site
+  - about-commercestreet-studio
+
+# GCS buckets allowed to be world-readable (rare; usually empty).
+allow_public_buckets: []
+
+# Firestore collections considered sensitive. Client-side writes will be flagged.
+sensitive_firestore_collections:
+  - users
+  - companies
+  - deals
+  - documents
+  - compliance
+  - auditLogs
+  - permissions
+  - roles
+  - profiles
+  - vdr
+  - crm
+  - engagementLetters
+  - ndas
+
+# Files/globs that count as "audit-loggable surfaces". New sensitive actions
+# touching these without a write to an audit log will be flagged.
+audit_log_surface_globs:
+  - "**/vdr/**"
+  - "**/documents/**"
+  - "**/compliance/**"
+  - "**/permissions/**"
+  - "**/roles/**"
+  - "**/crm/companies/**"
+  - "**/crm/deals/**"
+
+# Module taxonomy used for the "blast radius" summary.
+modules:
+  CRM: ["**/crm/**", "**/crm-*/**", "apps/crm/**"]
+  VDR: ["**/vdr/**", "apps/vdr/**"]
+  CSC Portal: ["**/portal/**", "apps/portal/**"]
+  About Site: ["**/about-site/**", "apps/about/**", "about-commercestreet-studio/**"]
+  Compliance: ["**/compliance/**", "apps/compliance/**"]
+  Shared UI: ["packages/ui/**", "shared/ui/**", "**/components/shared/**"]
+  Shared backend: ["packages/backend/**", "shared/backend/**", "**/functions/shared/**"]
+  Firebase config: ["firebase.json", "firestore.rules", "storage.rules", "firestore.indexes.json"]
+  Deployment: [".github/workflows/**", "**/cloudbuild.yaml", "**/Dockerfile*", "infra/**", "terraform/**"]
+  Security rules: ["firestore.rules", "storage.rules", "**/security-rules/**"]
+  Tests: ["**/__tests__/**", "**/*.test.*", "tests/**", "test/**"]
+  Docs: ["**/*.md", "docs/**"]
+
+# Risky dependency taxonomy. Adding a package matching one of these patterns
+# will be flagged for justification.
+risky_dependencies:
+  auth: ["jsonwebtoken", "passport", "oauth*", "next-auth", "firebase-admin", "@auth/*"]
+  crypto: ["crypto-js", "bcrypt", "node-forge", "openpgp"]
+  shell: ["shelljs", "execa", "cross-spawn"]
+  network: ["axios", "got", "node-fetch", "request"]
+  file_upload: ["multer", "busboy", "formidable"]
+  pdf: ["pdf-parse", "pdfkit", "pdf-lib", "pdfjs-dist"]
+  browser_automation: ["puppeteer", "playwright", "selenium-webdriver"]
+  ai_agent: ["langchain", "@langchain/*", "llamaindex", "autogen*"]
+
+# Severity overrides. Use this to dial individual rules up or down for your repo
+# without forking the rule code.
+severity_overrides:
+  # CSC-UI-001: LOW
+  # CSC-DATA-001: LOW
+
+# Disable rules entirely (use sparingly).
+disabled_rules: []
+
+# Required tags in PR title for high-risk modules (informational for v1).
+required_tags_per_module:
+  Compliance: ["compliance-review"]
+  Security rules: ["security-review"]

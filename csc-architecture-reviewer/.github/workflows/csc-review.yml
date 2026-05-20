@@ -1,0 +1,62 @@
+# Example workflow. Copy into any CSC repo at `.github/workflows/csc-review.yml`
+# and adjust the install/run steps to where you host the reviewer (workspace
+# subdir, vendored, npm/GHCR package, or git-cloned).
+name: CSC Architecture Review
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write # required for --post-comment
+
+concurrency:
+  group: csc-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base ref
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}:refs/remotes/origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install reviewer
+        working-directory: csc-architecture-reviewer
+        run: npm ci
+
+      - name: Run CSC architecture review
+        working-directory: csc-architecture-reviewer
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_PR_TITLE: ${{ github.event.pull_request.title }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: |
+          node src/index.js \
+            --base origin/${{ github.event.pull_request.base.ref }} \
+            --head HEAD \
+            --output ../csc-review.md \
+            --json-output ../csc-review.json \
+            --post-comment \
+            --fail-on BLOCKER \
+            --quiet
+
+      - name: Upload review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: csc-review
+          path: |
+            csc-review.md
+            csc-review.json

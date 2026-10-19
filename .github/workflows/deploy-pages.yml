@@ -1,5 +1,8 @@
 name: Deploy GitHub Pages
 
+# GitHub Pages only publishes from this workflow on `main` (and manual
+# workflow_dispatch). Pull request branches do not update the live demo at
+# https://thejayer.github.io/athlete-log/ until they are merged.
 on:
   push:
     branches:
@@ -28,9 +31,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Run checks
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
         run: npm test
+
+      - name: Run app integrity verification
+        run: npm run test:verify
 
   deploy:
     name: Deploy to Pages
@@ -46,13 +56,14 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
+
+      - name: Assemble static app
+        run: node scripts/prepare-pages.js
 
       - name: Upload static app
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
 
       - name: Deploy
         id: deployment

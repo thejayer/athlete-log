@@ -1,37 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const { STATIC_APP_FILES, BROWSER_SCRIPTS } = require("./static-app-files");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const exists = (file) => fs.existsSync(path.join(root, file));
 
-const requiredFiles = [
-  "index.html",
-  "styles.css",
-  "utils.js",
-  "data.js",
-  "store.js",
-  "timers.js",
-  "analytics.js",
-  "render.js",
-  "events.js",
-  "app.js",
-  "service-worker.js",
-  "manifest.webmanifest",
-  "assets/app-icon.svg",
-  "assets/court-course.svg",
-];
-
-const requiredScripts = [
-  "utils.js",
-  "data.js",
-  "store.js",
-  "timers.js",
-  "analytics.js",
-  "render.js",
-  "events.js",
-  "app.js",
-];
+const requiredFiles = STATIC_APP_FILES;
+const requiredScripts = BROWSER_SCRIPTS;
 
 const errors = [];
 

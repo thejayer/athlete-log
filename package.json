@@ -2,9 +2,12 @@
   "name": "athlete-log",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-only",
+  "homepage": "https://thejayer.github.io/athlete-log/",
   "description": "Sport training log for golf, tennis, pickleball, lifting, endurance, and GPS-style golf rounds.",
   "scripts": {
-    "check:js": "node --check utils.js && node --check data.js && node --check store.js && node --check timers.js && node --check analytics.js && node --check render.js && node --check events.js && node --check app.js && node --check service-worker.js && node --check scripts/verify-app.js",
+    "build:pages": "node scripts/prepare-pages.js",
+    "check:js": "node --check utils.js && node --check data.js && node --check store.js && node --check timers.js && node --check analytics.js && node --check render.js && node --check events.js && node --check app.js && node --check service-worker.js && node --check scripts/verify-app.js && node --check scripts/static-app-files.js && node --check scripts/prepare-pages.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",

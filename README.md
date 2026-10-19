@@ -1,90 +1,78 @@
 # Athlete Log
 
-A static MVP prototype for a sport-performance training app: Hevy-style logging, but organized around golf, tennis, pickleball, endurance, CrossFit, swimming, cycling, and lifting.
+[![CI](https://github.com/thejayer/athlete-log/actions/workflows/ci.yml/badge.svg)](https://github.com/thejayer/athlete-log/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-Open `index.html` in a browser to try it.
+A static sport-performance training log. Hevy-style session capture, organized around golf, tennis, pickleball, endurance, and lifting, with a GPS-style golf round mode.
 
-## Development workflow
+**[Live demo](https://thejayer.github.io/athlete-log/)** · no build step · data stays in the browser
 
-- Open a pull request into `main` for changes.
-- GitHub Actions runs syntax checks, lint, format check, unit tests, and the static app integrity verifier on every pull request.
-- CodeRabbit reviews pull requests in GitHub before merge.
-- Merging to `main` runs the same checks and deploys the static app to GitHub Pages.
+Screenshots below use the built-in synthetic **Athlete** demo log. There are no real names in the sample data.
 
-Local checks:
+![Dashboard with readiness, weekly load, and sport mix for the synthetic Athlete demo](docs/screenshots/dashboard.png)
+
+## Try it
+
+- **Live demo:** [thejayer.github.io/athlete-log](https://thejayer.github.io/athlete-log/)
+- **Local:** open `index.html` in a browser, or serve the folder (`python3 -m http.server`) so the installable PWA / service worker can register.
+
+GitHub Pages deploys from `main` only. A pull request does not refresh the live demo until it is merged.
+
+The reset control restores the synthetic training log. Sessions persist in `localStorage` and mirror to IndexedDB when the browser allows it.
+
+## Features
+
+- Template-driven logging for golf range, short game, and rounds; tennis and pickleball drills or matches; running; and Hevy-style lifting sets
+- Dashboard readiness, weekly load, sport mix, recommendations, and a Today command center
+- Weekly planner, calendar, goals, and program builder (including a smart week from profile and recovery)
+- Progress analytics: personal records, load trends, sport mix, recovery heat, and session compare
+- Golf GPS round mode on a simulated course, with yardages, club recommendations, scorecard, and save-to-log
+- Drill library, custom templates, profile setup, and JSON/CSV export-import
+- Light/dark theme, mobile bottom nav, and a service worker so the app is installable on localhost or HTTPS
+
+## Screenshots
+
+Demo data only — profile name **Athlete**, fictional Red Raider Golf Club.
+
+**Log a session**
+
+![Sport templates for golf, tennis, pickleball, running, and lifting](docs/screenshots/log-workout.png)
+
+**Golf GPS round**
+
+![Simulated GPS-style golf hole with yardages and club recommendation](docs/screenshots/golf-gps.png)
+
+**Progress**
+
+![Performance dashboard with weekly load, sport mix, and recovery flags](docs/screenshots/progress.png)
+
+**Mobile**
+
+![Dashboard on a narrow viewport with bottom navigation](docs/screenshots/dashboard-mobile.png)
+
+## Development
+
+Pull requests into `main` run syntax checks, ESLint, Prettier, `tsc --checkJs`, Vitest, and a static-app integrity verifier. Merging to `main` runs the same checks and deploys only the browser app (`index.html`, JS/CSS, assets, manifest) to GitHub Pages.
 
 ```bash
-npm run check:js       # node --check across each top-level JS file
+npm ci
+npm run check:js       # node --check on app and script files
 npm run lint           # eslint
 npm run typecheck      # tsc --noEmit against JSDoc @typedefs in types.js
 npm run format:check   # prettier --check
-npm test               # vitest run (unit tests)
-npm run test:verify    # static app integrity check (file presence, manifest, etc.)
+npm test               # vitest run
+npm run test:verify    # static app file/manifest/service-worker checks
+npm run build:pages    # copy the browser app into dist/ for Pages
 ```
 
-## Running tests
+Unit tests live in `tests/` with a small `tests/helpers/loadAppContext.mjs` helper that loads the script-tag files in a Node `vm` sandbox:
 
-Unit tests live in `tests/` next to a small `tests/helpers/loadAppContext.mjs`
-that loads the script-tag JS files into a Node `vm` sandbox so they can be
-exercised without a browser. Tests use Vitest:
+- `tests/utils.test.mjs` — date helpers, safe storage, CSV parsing
+- `tests/analytics.test.mjs` — readiness, load buckets, personal records, recommendations
+- `tests/prepare-pages.test.mjs` — Pages artifact contains the static app only
 
-```bash
-npm test           # one-shot
-npm run test:watch # interactive watcher
-```
+Tests for `app.js`, `render.js`, and `events.js` are deferred; those files are tightly coupled to the DOM. Mutable state lives in `store.js`.
 
-Two test files today:
+## License
 
-- `tests/utils.test.mjs` — covers every export in `utils.js` (date helpers, safe storage, CSV row parsing) with happy-path and edge-case coverage.
-- `tests/analytics.test.mjs` — covers readiness scoring, week-bucket load (input to acute-to-chronic ratio), personal-record detection, and recommendation selection in `analytics.js`.
-
-Tests for `app.js`, `render.js`, and `events.js` are deliberately deferred — those files are tightly coupled to the DOM. Now that COM-150 has moved state into `store.js`, future tests can exercise store-driven flows without spinning up the DOM.
-
-## Current prototype
-
-- Template-driven sport logging for golf range sessions, golf short-game practice, golf rounds, tennis ball machine sessions, tennis matches, pickleball drills, pickleball matches, running, and lifting.
-- Dynamic fields adapt to each session type.
-- Saved sessions persist in browser `localStorage` and mirror to IndexedDB when the browser allows it.
-- The reset button restores the demo training log.
-- Dashboard readiness, load, sport mix, recommendations, and coach notes are calculated from saved sessions.
-- Recovery body map sliders persist locally and influence the recommendation engine.
-- Visual system updated with a more premium sport-performance aesthetic, responsive panels, and refined light/dark themes.
-- Theme shifted to a Texas Tech-inspired red, black, white, and graphite palette with cleaner Google-inspired Material-style surfaces and controls.
-- Session history now supports dates, sport filters, search, sorting, editing, duplication, deletion, and structured field values for future charts.
-- Weekly Planner view supports planned sessions by day, template-based scheduling, local persistence, balance warnings, reset, and completing planned sessions into the training log.
-- Goals view supports active outcome selection, persisted primary goal state, goal progress, recommended templates, sidebar goal updates, and goal-aware dashboard coaching.
-- Progress now includes calculated analytics cards for weekly load, sport mix, goal focus, recovery risk, and trend readouts.
-- Mobile polish includes a bottom navigation bar, floating log button, sticky save button while logging, compact mobile cards, and snackbar feedback for key actions.
-- Sports view adds sport-specific dashboards for golf, tennis, pickleball, endurance, and strength, plus quick-start templates and recent sport sessions.
-- Session detail panels turn logged workouts into richer breakdowns with metrics, related sessions, and a coach readout.
-- Calendar view combines planned and completed sessions in a month layout, with completed sessions opening detail and planned sessions completing into the log.
-- Progress now includes personal records for golf, tennis, pickleball, endurance, and lifting, with quick links back to the session that set each mark.
-- Program Builder can generate four-week blocks and load week one into the planner.
-- Drill Library adds reusable golf, tennis, pickleball, strength, and endurance drills that can start the matching log template.
-- Progress includes richer trend charts for weekly load, sport momentum, recovery heat, and sport-filtered views.
-- Compare view supports side-by-side session comparison across duration, effort, outcome, and structured fields.
-- Data tools export JSON/CSV and import Athlete Log JSON back into local storage.
-- Progress data tools now include an Apple Health, Strava, and Garmin-style CSV mapping preview for future connected imports.
-- Log Workout includes session and rest timers for lifts, ball machine blocks, range work, and intervals.
-- Advanced analytics adds consistency, planner completion, acute-to-chronic load, soreness pressure, PR coverage, and primary sport signal.
-- Empty states and accessibility polish improve keyboard navigation, focus state, and screen-reader feedback.
-- UI polish adds a sticky status header, refined hover/focus states, improved dark-mode surfaces, motion with reduced-motion support, cleaner mobile navigation, and more premium card treatments.
-- Profile setup personalizes primary sport, goal, availability, preferred days, watch areas, and recommendation context.
-- Dashboard daily readiness check-ins track sleep, soreness, energy, stress, motivation, and notes, then adjust readiness and recommendations.
-- Dashboard now includes a Today command center for readiness, planned sessions, recommended work, and the last logged workout.
-- Library custom builder saves personal golf drills, tennis ball machine patterns, pickleball blocks, endurance work, or lifting templates that can be launched into the log.
-- Logged sessions now receive a session score, and saved sessions can be turned into reusable custom templates.
-- Lifting logs now support Hevy-style exercise set rows with exercise, set number, reps, weight, and RPE.
-- Sport-specific detail includes richer golf scoring, range miss patterns, tennis serve/error/target stats, and pickleball drop/dink/reset metrics.
-- Program progression can load a smart week adjusted by profile, readiness, soreness, and available training days.
-- PWA metadata, app icon, and a service worker make the app installable/offline when served from localhost or HTTPS.
-- Shared utility code now lives in `utils.js` for local date keys, safe storage reads, and CSV row parsing.
-- Workout and rest timer behavior now lives in `timers.js`.
-- Static catalog/default data now lives in `data.js`.
-- Mutable app state lives in `store.js` (sessions, planner, recovery, profile, custom drills, readiness check-ins, goal/program ids, club bag, GPS round). Mutations route through `store.updateX(fn)`; persistence and the IndexedDB mirror happen inside the store. `app.js` keeps local-var aliases that re-sync via `store.subscribe(...)` so the existing reads continue to work unchanged.
-- Readiness, scoring, records, progress, and recommendation logic now live in `analytics.js`.
-- Screen rendering now lives in `render.js`, and event wiring now lives in `events.js`.
-- Custom templates can now be edited, duplicated, show their created date, and be scheduled from the Planner.
-- Golf now has richer range, short-game, and round fields, plus a golf dashboard block, scoring recommendations, and session-level golf analysis.
-- Golf GPS Round Mode adds a simulated 18-hole course, yardages, hazards, club recommendations, hole scoring, a scorecard, and save-to-log round recap.
-- Golf GPS now persists in-progress rounds, supports editable club carry/total distances, shot tracking, per-hole strategy notes, tuning for wind/elevation/temperature/lie/shot type, saved GPS scorecards, strokes-gained-lite buckets, and generated practice plans.
+[GNU General Public License v3.0](LICENSE) (`GPL-3.0-only`).
